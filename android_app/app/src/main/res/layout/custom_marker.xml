@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageView
+        android:id="@+id/imgAvatar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginBottom="-1dp"
+        android:layout_marginLeft="9dp"
+        />
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/map_marker"
+        android:id="@+id/imgMarker"
+        android:layout_marginTop="-30dp"
+        -->
+    <FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/custom_marker_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/marker_mask">
+        <ImageView
+            android:id="@+id/profile_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="@null"
+            android:src="@drawable/temp" />
+    <!--ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:src="@drawable/ic_directions_car_light_blue_800_24dp" /-->
+</FrameLayout>
+
+
+

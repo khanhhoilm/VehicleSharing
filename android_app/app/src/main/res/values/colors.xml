@@ -14,4 +14,5 @@
     <color name="yellow">#f1c40f</color>
     <color name="button_edit_profile">#3498db</color>
     <color name="color_line_field">#34495e</color>
+    <color name="background_nav_header">#ff8533</color>
 </resources>

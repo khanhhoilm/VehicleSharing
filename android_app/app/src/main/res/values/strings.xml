@@ -34,7 +34,7 @@
     <string name="registered_emailid">Please enter your Registered Email Id below:</string>
     <string name="submit">SUBMIT</string>
     <string name="back">BACK</string>
-    <string name="facebook_app_id">236272210112206</string>
+    <string name="facebook_app_id">185601375342600</string>
     <string name="title_activity_main2">Main2Activity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -42,9 +42,15 @@
     <string name="default_web_client_id1">1093380309543-o85979qbsnp54ppfi91m1pdaceb4p86o.apps.googleusercontent.com</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-
+    <string name="dialog_find_vehicle">Bạn không có xe và có nhu cầu tìm 1 xe để đi nhờ. Để tìm được xe dễ dàng hơn, vui lòng điền đầy đủ thông tin bên dưới</string>
+    <string name="dialog_find_people">Bạn có xe và muốn tìm người đi chung. Để tìm được người đi chung dễ dàng hơn, vui lòng điền đầy đủ thông tin bên dưới</string>
     <string name="user_exists">Số điện thoại đã tồn tại</string>
+    <string name="no_internet">Lỗi kết nối mạng vui lòng kiểm tra kết nối</string>
+    <string name="add_request_fail">Đăng ký không thành công, vui lòng thử lại</string>
+    <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
 
+
+    <string name="api_key">AIzaSyA9bahjV6uVc5aEqyKgdJ6uMBjgqIai5h8</string>
     <string-array name="sexs_array">
         <item>Male</item>
         <item>Female</item>
@@ -66,10 +72,13 @@
         <item>1</item>
         <item>2</item>
     </string-array>
-    <string-array name="vehicle_type">
+    <string name="vehicle_type">
         <item>Car</item>
         <item>Bike</item>
-    </string-array>
+    </string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 
 </resources>
