@@ -51,8 +51,9 @@ import co.vehiclessharing.R;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import vehiclessharing.vehiclessharing.adapter.PlaceAutocompleteAdapter;
-import vehiclessharing.vehiclessharing.adapter.SpinerVehicleTypeAdapter;
+import vehiclessharing.vehiclessharing.api.ApiService;
+import vehiclessharing.vehiclessharing.controller.adapter.PlaceAutocompleteAdapter;
+import vehiclessharing.vehiclessharing.controller.adapter.SpinerVehicleTypeAdapter;
 import vehiclessharing.vehiclessharing.api.RelateRequestAPI;
 import vehiclessharing.vehiclessharing.api.RestManager;
 import vehiclessharing.vehiclessharing.authentication.SessionManager;
@@ -280,13 +281,16 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
                 }
                 break;
             case R.id.btnAddOK:
+
                 boolean checkEmpty = checkValidation();
                 if (!checkEmpty) {
+                    btnOk.setEnabled(false);
                     sendRequestToServer();
                 }
                 break;
             case R.id.btnAddCancel:
                 dismiss();
+
                 break;
             case R.id.imgClearCurLocation:
                 txtCurLocation.setText("");
@@ -324,7 +328,6 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         Log.d("Token FCM", "Token Value: " + deviceToken);
         Log.d("DeviceId", "Device Id Value: " + deviceId);
 
-
         mManager.getApiService().registerRequest(userId, sourLocation, desLocation, time, sessionId, deviceId, vehicleType, deviceToken).enqueue(new Callback<RequestResult>() {
             @Override
             public void onResponse(Call<RequestResult> call, Response<RequestResult> response) {
@@ -339,6 +342,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
                     }
                 } else {
                     Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
+                    btnOk.setEnabled(true);
                 }
 
             }
@@ -346,6 +350,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
             @Override
             public void onFailure(Call<RequestResult> call, Throwable t) {
                 if(isAdded()) {
+                    btnOk.setEnabled(true);
                     Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
                 }
             }

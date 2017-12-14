@@ -1,4 +1,4 @@
-package vehiclessharing.vehiclessharing.adapter;
+package vehiclessharing.vehiclessharing.controller.adapter;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -52,7 +52,7 @@ public class SpinerVehicleTypeAdapter extends ArrayAdapter<String> {
             {
                 imageView.setImageResource(R.drawable.ic_directions_car_indigo_700_24dp);
             }else {
-                imageView.setImageResource(R.drawable.ic_directions_bike_indigo_700_24dp);
+                imageView.setImageResource(R.drawable.ic_motorcycle_indigo_a700_24dp);
             }
             //imageView.setImageResource(imageArray[position]);
 

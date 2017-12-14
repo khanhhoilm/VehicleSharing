@@ -149,8 +149,10 @@ public class SendRequestFragment extends DialogFragment implements View.OnClickL
             @Override
             public void onResponse(Call<ResultSendRequest> call, Response<ResultSendRequest> response) {
                 if (response.isSuccessful() && response.body().getStatus().getError()==0) {
-                    dismiss();
-                    Toast.makeText(mActivity, mActivity.getString(R.string.wait_accept), Toast.LENGTH_SHORT).show();
+               if(isAdded()) {
+                   dismiss();
+                   Toast.makeText(mActivity, mActivity.getString(R.string.wait_accept), Toast.LENGTH_SHORT).show();
+               }
                     sendRequestCallBack.sendRequestSuccess();
                 }else {
                     Toast.makeText(mActivity, "Send failed", Toast.LENGTH_SHORT).show();

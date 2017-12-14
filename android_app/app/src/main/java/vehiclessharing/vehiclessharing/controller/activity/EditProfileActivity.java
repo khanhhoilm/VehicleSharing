@@ -151,15 +151,8 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
             avatarUser.setImageBitmap(userInfo.getPicture());
         }
         avatarUser.setImageBitmap(bitmap);
-
-      /*  if(MainActivity.currentUser.getUser().getSex().equals("Male"))
-            rdMale.setChecked(true);
-        else rdFemale.setChecked(true);*/
     }
 
-    /**
-     * Handle event the fields layout
-     */
     private void addEvents() {
         rdFemale.setOnClickListener(this);
         rdMale.setOnClickListener(this);
@@ -289,9 +282,6 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     /**
      * Update data profile
-     */
-    /**
-     * Update image to Storage Firebase
      *
      * @param file a local file
      */
@@ -327,8 +317,6 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                     // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                     Uri downloadUrl = taskSnapshot.getDownloadUrl();
                     displayButtonUpdate(true);
-
-
                 }
             });
         }
@@ -407,15 +395,13 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     private void getNewAddress(Intent data) {
         Place place = PlaceAutocomplete.getPlace(this, data);
-        //  if (requestCode == 1) {
-        //    if (resultCode == 1) {
+
         if (edAddress != null && place != null) {
             edAddress.setText(place.getAddress());
             userInfo.setAddress((String) place.getAddress());
             displayButtonUpdate(true);
         }
 
-        // }
     }
 
     @Override
@@ -467,7 +453,6 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         userInfo.setEmail(txtEmail.getText().toString());
         //userInfo.setAvatarLink();
         userInfo.setBirthday(txtBirthday.getText().toString());
-     //   mDatabase.updateInfoUser(userInfo);
 
         String password ="";
         if(txtPassword.getText().toString().length()>0) {

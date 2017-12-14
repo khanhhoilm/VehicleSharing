@@ -2,8 +2,11 @@ package vehiclessharing.vehiclessharing.utils;
 
 import android.content.Context;
 import android.location.Address;
+import android.location.Criteria;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationManager;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -45,7 +48,20 @@ public class PlaceHelper {
         try {
             GoogleMap mMap = MainActivity.mGoogleMap;
 
-            Location myLocation = mMap.getMyLocation();
+            Location myLocation=null;
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP) {
+                    myLocation=mMap.getMyLocation();
+            }else {
+                LocationManager locationManager = (LocationManager)
+                        mContext.getSystemService(Context.LOCATION_SERVICE);
+                Criteria criteria=new Criteria();
+                // CheckerGPS checkerGPS=new CheckerGPS();
+
+                if(MainActivity.checkerGPS.checkLocationPermission())
+                {
+                    myLocation=locationManager.getLastKnownLocation(locationManager.getBestProvider(criteria,false));
+                }
+            }
             geocoder = new Geocoder(mContext, Locale.getDefault());
             if (myLocation != null) {
                 double dLatitude = myLocation.getLatitude();

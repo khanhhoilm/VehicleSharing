@@ -1,7 +1,10 @@
 package vehiclessharing.vehiclessharing.utils;
 
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 

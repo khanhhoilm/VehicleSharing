@@ -27,7 +27,7 @@ public class RatingUserTogether {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
                     ratingCallback.ratingSuccess();
                 } else {
-                    ratingCallback.ratingFailure("Response unsucessful status error code = " + String.valueOf(response.body().getStatus().getError()));
+                    ratingCallback.ratingFailure("Response unsucessful status error code = ");
                 }
             }
 

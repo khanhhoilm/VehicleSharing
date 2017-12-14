@@ -50,10 +50,6 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
             getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
         }
 
-//        //set up full screen
-       /* getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-*/
         setContentView(R.layout.activity_signin);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//DO NOT ROTATE the screen even if the user is shaking his phone like mad
 
@@ -71,20 +67,12 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
         addEvents();
     }
 
-    /**
-     * Set Listeners
-     */
     private void addEvents() {
-        // On close icon click finish activity
         imgClose.setOnClickListener(this);
 
     }
 
 
-    /**
-     * Handling button/textview click
-     * @param v
-     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -95,13 +83,7 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
-    /**
-     * Initliaze Views
-     */
     private void addControls() {
-       // mAuth = FirebaseAuth.getInstance();
-
-        //[Start] Setup for progress
         mProgress =new ProgressDialog(this);
         mProgress.setTitle(Utils.SignIn);
         mProgress.setMessage(Utils.PleaseWait);
@@ -115,9 +97,6 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
         imgClose.startAnimation(animation);
     }
 
-    /**
-     * Replace Login Fragment with animation
-     */
     public void replaceLoginFragment() {
         fragmentManager
                 .beginTransaction()
@@ -127,9 +106,6 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
-    /**
-     * Handling press Back in device
-     */
     @Override
     public void onBackPressed() {
 
@@ -155,82 +131,10 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onStart() {
         super.onStart();
-       // mAuth.addAuthStateListener(mAuthListener);
-    }
+     }
 
     @Override
     public void onStop() {
         super.onStop();
-     /*   if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }*/
     }
-
-    /**
-     * Get user's profile in Database Firebase
-     * @return
-     */
-    private void getProfileUser(final String userId) {
-
-//        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-       // mUserReference = FirebaseDatabase.getInstance().getReference().child("users").child(userId); //Instance database firebase
-      /*  ValueEventListener getProfileUser = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Get Post object and use the values to update the UI
-                Log.d("DemoLogin", String.valueOf(dataSnapshot.getValue()));
-                User user = dataSnapshot.getValue(User.class);
-                storageProfileOnDevice(user,userId);//Save profile user on realm
-                // ...
-                switchActivity();//go to the Home Activity
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w("Canceled", "loadPost:onCancelled", databaseError.toException());
-                // ...
-            }
-        };*/
-     //   mUserReference.addListenerForSingleValueEvent(getProfileUser);
-    }
-
-    /**
-     * Switch to Home Activity when login succeed
-     */
-    private void switchActivity(){
-        if(mProgress != null) mProgress.dismiss();
-        startActivity(new Intent(SigninActivity.this,MainActivity.class));
-        finish();
-    }
-
-
-    /**
-     * Storage user's profile in device
-     * @param user object user
-     */
-  /*  private void storageProfileOnDevice(User user, String userId) {
-        BirthdayOnDevice birthdayOnDevice = new BirthdayOnDevice(
-                user.getBirthDay().getDay(),
-                user.getBirthDay().getMonth(),
-                user.getBirthDay().getYear()
-        );
-        AddressOnDevice addressOnDevice = new AddressOnDevice(
-                user.getAddress().getCountry(),
-                user.getAddress().getDistrict(),
-                user.getAddress().getProvince()
-        );
-        InformationUserOnDivce informationUserOnDivce = new InformationUserOnDivce(
-                user.getEmail(),
-                user.getImage(),
-                user.getFullName(),
-                user.getPhoneNumber(),
-                user.getSex(),
-                addressOnDevice,
-                birthdayOnDevice
-        );
-      *//*  UserOnDevice temp = new UserOnDevice(userId,informationUserOnDivce);
-        RealmDatabase.storageOnDiviceRealm(temp);*//*
-    }*/
-
 }

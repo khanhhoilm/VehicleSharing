@@ -92,22 +92,6 @@ public class Signin_Fragment extends Fragment implements View.OnClickListener {
         mProgress.setCanceledOnTouchOutside(false);
 //        //[End] Setup for progress
 
-     /*   mAuth = FirebaseAuth.getInstance(); // instance Authentication firebase
-
-        //[Start] Initialize Facebook Login button
-        mCallbackManager = CallbackManager.Factory.create();
-        loginfbButton = (LoginButton) view.findViewById(R.id.btnFbLogin);
-        loginfbButton.setReadPermissions("email", "public_profile");
-        loginfbButton.setFragment(this);
-        //[End] Initialize Facebook Login button
-
-
-        //[Start]setText Google Login button
-        loginggButton = (SignInButton) view.findViewById(R.id.btnGgLogin);
-        setGooglePlusButtonText(loginggButton,Utils.TextButtonGG);
-     */   //[End] setText Google Login button
-
-
         txtPhone = (EditText) view.findViewById(R.id.txtPhone);
         txtPassword = (EditText) view.findViewById(R.id.txtPassword);
         btnLogin = (Button) view.findViewById(R.id.btnLogin);
@@ -120,44 +104,7 @@ public class Signin_Fragment extends Fragment implements View.OnClickListener {
         // Load ShakeAnimation
         shakeAnimation = AnimationUtils.loadAnimation(getActivity(),
                 R.anim.shake);
-
-        // Setting text selector over textviews
-        /*XmlResourceParser xrp = getResources().getXml(R.drawable.text_selector);
-        try {
-            ColorStateList csl = ColorStateList.createFromXml(getResources(),
-                    xrp);
-
-            forgotPassword.setTextColor(csl);
-           // show_hide_password.setTextColor(csl);
-            signUp.setTextColor(csl);
-        } catch (Exception e) {
-        }
-*/
     }
-
-    /**
-     * Set text for button google login
-     * @param loginggButton instance reference to button google in layout
-     * @param s content button for button
-     */
-  /*  private void setGooglePlusButtonText(SignInButton loginggButton, String s) {
-        // Find the TextView that is inside of the SignInButton and set its text
-        for (int i = 0; i < loginggButton.getChildCount(); i++) {
-            View v = loginggButton.getChildAt(i);
-
-            if (v instanceof TextView) {
-                TextView tv = (TextView) v;
-                tv.setText(s);
-                tv.setPadding(0,5,0,5);
-                //tv.setPadding(0,5,50,5);
-                return;
-            }
-        }
-    }*/
-
-    /**
-     * Set Listeners
-     */
     private void addEvents() {
         btnLogin.setOnClickListener(this);
         forgotPassword.setOnClickListener(this);
@@ -166,11 +113,6 @@ public class Signin_Fragment extends Fragment implements View.OnClickListener {
 
     }
 
-    /**
-     * Handling button/textview click
-     *
-     * @param v
-     */
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

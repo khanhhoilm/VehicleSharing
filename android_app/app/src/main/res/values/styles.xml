@@ -32,4 +32,9 @@
         <item name="android:singleLine">true</item>
         <item name="android:padding">10dp</item>
     </style>
+
+    <style name="RatingBar" parent="Theme.AppCompat">
+        <item name="colorControlNormal">@color/yellow</item>
+        <item name="colorControlActivated">@color/star_color</item>
+    </style>
 </resources>

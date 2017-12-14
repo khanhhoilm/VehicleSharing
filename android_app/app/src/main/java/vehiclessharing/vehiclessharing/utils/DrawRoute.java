@@ -31,14 +31,14 @@ public class DrawRoute implements RoutingListener {
      */
     private Context mContext;
     public static Polyline polylineNotCurUser;
-    private GoogleMap googleMap;
+    private GoogleMap mGoogleMap;
     private int mSubject = 0;
 
 
-    public DrawRoute(Context mContext) {
+    public DrawRoute(Context mContext, GoogleMap googleMap) {
         this.mContext = mContext;
         polylineNotCurUser = null;
-        //  googleMap = MainActivity.mGoogleMap;
+        mGoogleMap = googleMap;
     }
 
     public int getmSubject() {
@@ -58,9 +58,11 @@ public class DrawRoute implements RoutingListener {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
         CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
-        if (!check.isOnline() || !check.checkLocationPermission() ||
+        if (!check.isOnline() || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) return;
+                !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+        }
+        ;
         Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.DRIVING)
                 .withListener(this)
@@ -69,17 +71,18 @@ public class DrawRoute implements RoutingListener {
         routing.execute();
     }
 
-    public void drawroadBetween4Location(LatLng latLng1, LatLng latLng2,LatLng latLng3, LatLng latLng4, int subject) {
+    public void drawroadBetween4Location(LatLng latLng1, LatLng latLng2, LatLng latLng3, LatLng latLng4, int subject) {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
         CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
-        if (!check.isOnline() || !check.checkLocationPermission() ||
+        if (!check.isOnline() || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) return;
+                !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+        }
         Routing routing = new Routing.Builder()
                 .travelMode(Routing.TravelMode.DRIVING)
                 .withListener(this)
-                .waypoints(latLng1, latLng2,latLng3,latLng4)
+                .waypoints(latLng1, latLng2, latLng3, latLng4)
                 .build();
         routing.execute();
     }
@@ -97,7 +100,7 @@ public class DrawRoute implements RoutingListener {
     public void onRoutingSuccess(ArrayList<Route> arrayList, int shortestRouteIndex) {
         Polyline polyline = null;
         try {
-            Log.d("onRoutingSuccess","onRoutingSuccess");
+            Log.d("onRoutingSuccess", "onRoutingSuccess");
             if (polyline != null) polyline.remove();
             PolylineOptions polyoptions = new PolylineOptions();
             polyoptions.color(Color.BLUE);
@@ -115,12 +118,12 @@ public class DrawRoute implements RoutingListener {
                 polyOptions.width(10 + i * 3);
                 polyOptions.addAll(arrayList.get(i).getPoints());
 
-                polyline = MainActivity.mGoogleMap.addPolyline(polyOptions);
+                polyline = mGoogleMap.addPolyline(polyOptions);
                 polyline.setTag(mSubject);
                 //if (mSubject != 0) {
-                    MainActivity.polylineList.add(mSubject,polyline);
+                MainActivity.polylineList.add(mSubject, polyline);
 
-               // Store a data object with the polyline, used here to indicate an arbitrary typ
+                // Store a data object with the polyline, used here to indicate an arbitrary typ
                 // polyline.setTag();
                 //}
                 // Toast.makeText(getApplicationContext(), "Route " + (i + 1) + ": distance - " + arrayList.get(i).getDistanceValue() + ": duration - " + arrayList.get(i).getDurationValue(), Toast.LENGTH_SHORT).show();

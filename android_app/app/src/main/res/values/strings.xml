@@ -101,6 +101,7 @@
     <string name="user_together">Yêu cầu của bạn đã được chấp nhận. Dưới đây là thông tin người đi chung với bạn</string>
     <string name="title_activity_vehicles_move">Map</string>
     <string name="btn_send_request">Gửi yêu cầu đến người này</string>
+    <string name="see_direct">Xem đường đi</string>
 
     <!--Navigation menu item title-->
     <string name="nav_home">Trang chủ</string>

@@ -73,7 +73,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/btnDirect"
-            android:text="Xem đường đi"/>
+            android:text="@string/see_direct"/>
 
         <!--<Button
             android:id="@+id/btnAccept"

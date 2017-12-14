@@ -83,5 +83,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.5"
             android:text="@string/deny" />
+        <Button
+            android:id="@+id/btnDirect"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:text="@string/see_direct" />
     </LinearLayout>
 </LinearLayout>

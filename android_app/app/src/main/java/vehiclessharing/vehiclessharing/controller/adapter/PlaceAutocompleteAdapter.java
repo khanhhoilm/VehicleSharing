@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package vehiclessharing.vehiclessharing.adapter;
+package vehiclessharing.vehiclessharing.controller.adapter;
 
 import android.content.Context;
 import android.graphics.Typeface;

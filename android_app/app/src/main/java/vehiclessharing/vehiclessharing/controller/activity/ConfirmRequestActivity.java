@@ -1,5 +1,6 @@
 package vehiclessharing.vehiclessharing.controller.activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
@@ -30,7 +31,7 @@ import vehiclessharing.vehiclessharing.utils.PlaceHelper;
 public class ConfirmRequestActivity extends AppCompatActivity implements View.OnClickListener, ConfirmRequestAPI.ConfirmRequestCallback {
     // private String dataReceive="";
     private ReceiveRequest receiveRequest;
-    private Button btnAccept, btnDeny;
+    private Button btnAccept, btnDeny, btnDirect;
     private CircleImageView imgAvatar;
     private TextView txtSourceLocation, txtDestinationLocation, txtUserName, txtTimeStart, txtNote, txtDistance;
     private String apiToken = "";
@@ -72,7 +73,6 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
         addControls();
         addEvents();
         loadContent();
-
     }
 
     private void loadContent() {
@@ -95,7 +95,7 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
             txtSourceLocation.setText(sourceLocation);
             String endLocation = PlaceHelper.getInstance(this).getAddressByLatLngLocation(receiveRequest.getEndLocation());
             txtDestinationLocation.setText(endLocation);
-          //  distance = (float) Helper.getMiles(distance);
+            //  distance = (float) Helper.getMiles(distance);
             txtDistance.setText("Cách bạn: " + String.valueOf(distance) + " km");
 
         } catch (IOException e) {
@@ -110,45 +110,68 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
         btnAccept.setOnClickListener(this);
         btnDeny.setOnClickListener(this);
         imgAvatar.setOnClickListener(this);
+        btnDirect.setOnClickListener(this);
     }
 
 
     private void addControls() {
-        txtUserName = (TextView) findViewById(R.id.txtUserName);
-        txtSourceLocation = (TextView) findViewById(R.id.txtSource);
-        txtDestinationLocation = (TextView) findViewById(R.id.txtDestination);
-        txtTimeStart = (TextView) findViewById(R.id.txtTimeStart);
-        imgAvatar = (CircleImageView) findViewById(R.id.imgAvatar);
-        btnAccept = (Button) findViewById(R.id.btnAccept);
-        btnDeny = (Button) findViewById(R.id.btnDeny);
-        txtNote = (TextView) findViewById(R.id.txtNote);
-        txtDistance = (TextView) findViewById(R.id.txtDistance);
+        txtUserName = findViewById(R.id.txtUserName);
+        txtSourceLocation = findViewById(R.id.txtSource);
+        txtDestinationLocation = findViewById(R.id.txtDestination);
+        txtTimeStart = findViewById(R.id.txtTimeStart);
+        imgAvatar = findViewById(R.id.imgAvatar);
+        btnAccept = findViewById(R.id.btnAccept);
+        btnDeny = findViewById(R.id.btnDeny);
+        txtNote = findViewById(R.id.txtNote);
+        txtDistance = findViewById(R.id.txtDistance);
+        btnDirect = findViewById(R.id.btnDirect);
     }
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
             case R.id.btnAccept:
-                ConfirmRequestAPI.getInstance(this).sendConfirmRequest(apiToken, receiveRequest.getUserId(), 2);
+                sendConfirm(2);
                 break;
             case R.id.btnDeny:
-                ConfirmRequestAPI.getInstance(this).sendConfirmRequest(apiToken, receiveRequest.getUserId(), 1);
+                sendConfirm(1);
+                break;
+            case R.id.btnDirect:
+                Intent intent = new Intent(this, VehicleMoveActivity.class);
+
+                intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY,"confirm_request");
+                startActivity(intent);
                 break;
         }
+
+    }
+
+    private void sendConfirm(int confirmId) {
+        ConfirmRequestAPI.getInstance(this).sendConfirmRequest(apiToken, receiveRequest.getUserId(), confirmId);
+
     }
 
     @Override
     public void confirmRequestSuccess(int confirmId) {
-        Toast.makeText(this, getResources().getString(R.string.request_accept_send_success), Toast.LENGTH_SHORT).show();
-        yourRequestInfo.setTimeStart(receiveRequest.getStartTime());
-        yourRequestInfo.setSourceLocation(receiveRequest.getStartLocation());
-        yourRequestInfo.setDestLocation(receiveRequest.getEndLocation());
-        yourRequestInfo.setVehicleType(receiveRequest.getVehicleType());
-        if(databaseHelper.insertRequest(yourRequestInfo,receiveRequest.getUserId()))
-        {
-            Log.d("insertRequest","success");
+        if(confirmId==2) {
+            Toast.makeText(this, getResources().getString(R.string.request_accept_send_success), Toast.LENGTH_SHORT).show();
+            yourRequestInfo = new RequestInfo();
+            yourRequestInfo.setTimeStart(receiveRequest.getStartTime());
+            yourRequestInfo.setSourceLocation(receiveRequest.getStartLocation());
+            yourRequestInfo.setDestLocation(receiveRequest.getEndLocation());
+            yourRequestInfo.setVehicleType(receiveRequest.getVehicleType());
+            if (databaseHelper.insertRequestNotMe(yourRequestInfo, receiveRequest.getUserId())) {
+                Log.d("insertRequest", "success");
+            }
+            Log.d("accept request", "success");
+
+            btnAccept.setVisibility(View.GONE);
+            btnDeny.setVisibility(View.GONE);
+            btnDirect.setVisibility(View.VISIBLE);
+        }else {
+            finish();
         }
-        Log.d("accept request", "success");
 
     }
 
@@ -156,5 +179,4 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
     public void confirmRequestFailure(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
-
 }

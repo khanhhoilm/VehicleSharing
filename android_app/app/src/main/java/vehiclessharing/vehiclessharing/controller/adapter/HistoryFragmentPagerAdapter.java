@@ -1,4 +1,4 @@
-package vehiclessharing.vehiclessharing.adapter;
+package vehiclessharing.vehiclessharing.controller.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -19,7 +19,7 @@ import vehiclessharing.vehiclessharing.controller.fragment.HistoryFragment;
 
 public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 2;
-    private String tabTitles[] = new String[]{"History of Graber", "History of Needer"};
+    private String tabTitles[] = new String[]{"Khi là Người chở", "Khi là người quá giang"};
     private Context mContext;
 
     public HistoryFragmentPagerAdapter(FragmentManager fm, Context context) {
@@ -51,7 +51,7 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
             image = mContext.getResources().getDrawable(R.drawable.ic_directions_car_indigo_a700_24dp);
         } else if(position==1)
         {
-            image = mContext.getResources().getDrawable(R.drawable.ic_directions_run_indigo_700_24dp);
+            image = mContext.getResources().getDrawable(R.drawable.ic_accessibility_indigo_700_24dp);
         }
 
         image.setBounds(0, 0, image.getIntrinsicWidth(), image.getIntrinsicHeight());

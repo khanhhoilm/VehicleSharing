@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
@@ -33,6 +34,8 @@ import vehiclessharing.vehiclessharing.controller.activity.VehicleMoveActivity;
 public class CustomFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = CustomFirebaseMessagingService.class.getSimpleName();
     public static String DATA_RECEIVE = "data_about_sender";
+    public static String SHARE_PREFER_END_TRIP = "share_prefer_end_trip";
+    public static String IS_END_TRIP = "is_end_trip";
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -68,24 +71,42 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                     status = (String) jsonObject.get("status");
                 }
 
-                if (type.equals("send_request")) {
-                    intent = new Intent(this, ConfirmRequestActivity.class);
-                    intent.putExtra(DATA_RECEIVE, jsonReceive);
-                } else if (type.equals("confirm_request")) {
-                    if (status.equals("accept")) {
-                        intent = new Intent(this, ReceiveConfirmRequestActivity.class);
+                switch (type) {
+                    case "send_request":
+                        intent = new Intent(this, ConfirmRequestActivity.class);
                         intent.putExtra(DATA_RECEIVE, jsonReceive);
-                    } else {
-                        intent = new Intent(this, MainActivity.class);
-                    }
-                } else if (type.equals("start_the_trip")) {
-                    intent = new Intent(this, VehicleMoveActivity.class);
-                    intent.putExtra(DATA_RECEIVE, jsonReceive);
-                    if (jsonObject.has("journey_id")) {
-                        String journeyId = (String) jsonObject.get("journey_id");
-                        intent.putExtra("journey_id", journeyId);
-                    }
+                        break;
+                    case "confirm_request":
+                        if (status.equals("accept")) {
+                            intent = new Intent(this, ReceiveConfirmRequestActivity.class);
+                            intent.putExtra(DATA_RECEIVE, jsonReceive);
+                        } else {
+                            intent = new Intent(this, MainActivity.class);
+                        }
+                        break;
+                    case "start_the_trip":
+                        intent = new Intent(this, VehicleMoveActivity.class);
+                        if (jsonObject.has("journey_id")) {
+                            //bug not cast
+                            Integer journeyId = (Integer) jsonObject.get("journey_id");
+                            intent.putExtra("journey_id", journeyId);
+                            intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY, "start_request");
+                        }
+                        break;
+                    case "end_the_trip":
+                        SharedPreferences sharedPreferences = getSharedPreferences(SHARE_PREFER_END_TRIP, MODE_PRIVATE);
+                        SharedPreferences.Editor edit = sharedPreferences.edit();
+                        edit.putBoolean(IS_END_TRIP, true);
+                        edit.commit();
+                        intent = new Intent(this, RatingActivity.class);
+                        if (jsonObject.has("journey_id")) {
+                            //bug not cast
+                            Integer journeyId = (Integer) jsonObject.get("journey_id");
+                            intent.putExtra("journey_id", journeyId);
+                        }
+                        break;
                 }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }

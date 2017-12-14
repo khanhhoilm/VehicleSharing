@@ -72,14 +72,14 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
     }
 
     private void addControls() {
-        txtUserName = (TextView) findViewById(R.id.txtUserName);
-        txtTimeStart = (TextView) findViewById(R.id.txtTimeStart);
-        txtSourLocation = (TextView) findViewById(R.id.txtSource);
-        txtEndLocation = (TextView) findViewById(R.id.txtDestination);
-        txtVehicleType = (TextView) findViewById(R.id.txtVehicleType);
-        btnDirect = (Button) findViewById(R.id.btnDirect);
+        txtUserName = findViewById(R.id.txtUserName);
+        txtTimeStart = findViewById(R.id.txtTimeStart);
+        txtSourLocation = findViewById(R.id.txtSource);
+        txtEndLocation = findViewById(R.id.txtDestination);
+        txtVehicleType = findViewById(R.id.txtVehicleType);
+        btnDirect = findViewById(R.id.btnDirect);
         databaseHelper = new DatabaseHelper(this);
-        if (databaseHelper.insertRequest(yourRequestInfo, confirmRequest.getUserId())) {
+        if (databaseHelper.insertRequestNotMe(yourRequestInfo, confirmRequest.getUserId())) {
             Log.d("insertDatabase", "success");
         }
     }
@@ -89,6 +89,7 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
         if (v.getId() == R.id.btnDirect) {
             Intent intent = new Intent(ReceiveConfirmRequestActivity.this, VehicleMoveActivity.class);
             intent.putExtra(CustomFirebaseMessagingService.DATA_RECEIVE, dataReceive);
+            intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY,"receive_confirm_request");
             startActivity(intent);
         }
     }

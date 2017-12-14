@@ -22,7 +22,11 @@ public class CheckInternetAndLocation {
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+        if(netInfo != null && netInfo.isConnectedOrConnecting())
+        {
+            return true;
+        }
+        return false;
     }
     public boolean checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(mContext,

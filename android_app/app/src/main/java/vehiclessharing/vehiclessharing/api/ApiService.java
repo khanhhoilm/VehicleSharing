@@ -5,6 +5,7 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Headers;
 import retrofit2.http.POST;
+import vehiclessharing.vehiclessharing.model.History;
 import vehiclessharing.vehiclessharing.model.RequestResult;
 import vehiclessharing.vehiclessharing.model.ResultSendRequest;
 import vehiclessharing.vehiclessharing.model.SignInResult;
@@ -70,32 +71,79 @@ public interface ApiService {
     @POST("users/show")
     Call<UserInfo> getUserInfo(@Field("api_token") String apiToken, @Field("user_id") int userId);
 
+    @FormUrlEncoded
+    @POST("api/rating")
+    Call<StatusResponse> ratingUserTogether(@Field("api_token") String apiToken, @Field("journey_id") int journeyId,
+                                            @Field("rating_value") int ratingValue, @Field("comment") String comment);
+
+    @FormUrlEncoded
+    @POST("api/end-the-trip")
+    Call<StatusResponse> endTheTrip(@Field("api_token") String apiToken, @Field("journey_id") int journeyId);
+
     /*{
     "status": {
         "error": 0,
         "message": "Success"
     },
-    "rating_info": {
-        "total_rating": 3,
-        "user_info": {
-            "id": 1,
-            "phone": "0939267597",
-            "name": "Hội Khánh",
-            "email": null,
-            "google_id": null,
-            "facebook_id": null,
-            "avatar_link": null,
-            "gender": 1,
-            "address": null,
-            "birthday": null
+    "user_history_info": [
+        {
+            "success_journey": {
+                "driver": [
+                    {
+                        "journey": {
+                            "id": 31,
+                            "rating_value": 5,
+                            "start_time": {
+                                "date": "2017-12-13 02:31:44.000000",
+                                "timezone_type": 3,
+                                "timezone": "UTC"
+                            },
+                            "finish_time": "2017-12-13 03:43:53",
+                            "cancel_time": null,
+                            "start_location": {
+                                "lat": "10.798132",
+                                "lng": "106.68890699999997"
+                            },
+                            "end_location": {
+                                "lat": "40.741895",
+                                "lng": "-73.989308"
+                            },
+                            "partner": {
+                                "id": 21,
+                                "phone": "01677735016",
+                                "name": "Hội Khánh 016",
+                                "email": null,
+                                "google_id": null,
+                                "facebook_id": null,
+                                "avatar_link": null,
+                                "gender": 1,
+                                "address": null,
+                                "birthday": null
+                            },
+                            "partner_rating": {
+                                "journey_id": 31,
+                                "user_id": 21,
+                                "rating_value": 5,
+                                "comment": "good",
+                                "vehicle_type": 0
+                            }
+                        },
+                        "user_action": {
+                            "rating_value": 5,
+                            "comment": "Lái xe an toàn"
+                        }
+                    }
+                ],
+                "hiker": []
+            },
+            "fail_journey": {
+                "driver": [],
+                "hiker": []
+            }
         }
-    }
+    ]
 }*/
-
     @FormUrlEncoded
-    @POST
-    Call<StatusResponse> ratingUserTogether(@Field("api_token") String apiToken, @Field("journey_id") int journeyId,
-                                            @Field("rating_value") int ratingValue, @Field("comment") String comment);
-
-
+    @POST("users/show-history")
+    Call<History> getHistory(@Field("api_token") String apiToken);
 }

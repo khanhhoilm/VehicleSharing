@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import vehiclessharing.vehiclessharing.controller.activity.MainActivity;
 import vehiclessharing.vehiclessharing.model.LatLngLocation;
 import vehiclessharing.vehiclessharing.model.RequestInfo;
 import vehiclessharing.vehiclessharing.model.User;
@@ -300,14 +301,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 values.put(VEHICLE_TYPE, requestInfo.getVehicleType());
                 long rowId = db.insert(TABLE_REQUEST, null, values);
                 insertResult = true;
-            } else {
-                updateRequest(requestInfo, userId);
-                insertResult = true;
             }
         } catch (Exception e) {
             Log.d(TAG, "DBException");
         }
         return insertResult;
+    }
+
+    public boolean insertRequestNotMe(RequestInfo requestInfo,int userId){
+        boolean rs=false;
+        try {
+            SQLiteDatabase db = this.getWritableDatabase();
+            Cursor cursor = db.rawQuery(GET_REQUEST_INFO_NOT_ME(MainActivity.userId), null);
+            if(cursor.getCount()>0){
+                deleteAllRequestExceptMe(MainActivity.userId);
+            }
+            if (!isRequestExists(userId)) {
+                ContentValues values = new ContentValues();
+                values.put(USER_ID, userId);
+                values.put(SOURCE_LOCATION, requestInfo.getSourceLocation().convertLatLngToStringToDatabase());
+                values.put(DESTINATION_LOCATION, requestInfo.getDestLocation().convertLatLngToStringToDatabase());
+                values.put(TIME_START, requestInfo.getTimeStart());
+                values.put(VEHICLE_TYPE, requestInfo.getVehicleType());
+                long rowId = db.insert(TABLE_REQUEST, null, values);
+            rs=true;
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "DBException");
+        }
+        return rs;
     }
 
     public boolean updateRequest(RequestInfo requestInfo, int userId) {
@@ -375,6 +397,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             if (isRequestExists(userId)) {
                 String query = "DELETE FROM " + TABLE_REQUEST + " WHERE " + USER_ID + " = " + userId;
+                sqLiteDatabase.execSQL(query);
+                result = true;
+            }
+        } catch (Exception e) {
+
+        }
+        return result;
+    }
+    public boolean deleteAllRequestExceptMe(int userId) {
+        boolean result = false;
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        try {
+            if (isRequestExists(userId)) {
+                String query = "DELETE FROM " + TABLE_REQUEST + " WHERE " + USER_ID + " <> " + userId;
                 sqLiteDatabase.execSQL(query);
                 result = true;
             }

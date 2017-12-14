@@ -31,7 +31,7 @@ public class StartTripAPI {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
                     requestCallback.startTripSuccess(response.body().getJourneyInfo());
                 } else {
-                    requestCallback.startTripFailure("unsuccessful");
+                    requestCallback.startTripFailure(response.errorBody().toString());
                 }
             }
 

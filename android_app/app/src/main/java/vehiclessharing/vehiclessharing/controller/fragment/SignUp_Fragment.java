@@ -97,17 +97,6 @@ public class SignUp_Fragment extends Fragment implements View.OnClickListener {
         //terms_conditions = (CheckBox) view.findViewById(R.id.terms_conditions);
         mDrawable = getResources().getDrawable(R.drawable.ic_warning_red_600_24dp);
         mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
-
-        // Setting text selector over textviews
-       /* XmlResourceParser xrp = getResources().getXml(R.drawable.text_selector);
-        try {
-            ColorStateList csl = ColorStateList.createFromXml(getResources(),
-                    xrp);
-
-            login.setTextColor(csl);
-            //  terms_conditions.setTextColor(csl);
-        } catch (Exception e) {
-        }*/
     }
 
     /**
