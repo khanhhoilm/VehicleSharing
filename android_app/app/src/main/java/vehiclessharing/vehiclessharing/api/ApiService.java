@@ -51,6 +51,10 @@ public interface ApiService {
 
 
     @FormUrlEncoded
+    @POST("api/get-active-request")
+    Call<RequestResult> updateListActiveUser(@Field("api_token") String apiToken, @Field("vehicle_type") int vehicleType);
+
+    @FormUrlEncoded
     @Headers("Accept: application/json")
     @POST("api/send-request")
     Call<ResultSendRequest> sendRequestTogether(@Field("api_token") String apiToken, @Field("receiver_id") int receiverId, @Field("note") String note);
@@ -65,7 +69,7 @@ public interface ApiService {
 
     @FormUrlEncoded
     @POST("api/start-the-trip")
-    Call<StartStripResponse> startTheTrip(@Field("api_token") String apiToken);
+    Call<StartStripResponse> startTheTrip(@Field("api_token") String apiToken,@Field("partner_id") int parnerId);
 
     @FormUrlEncoded
     @POST("users/show")
@@ -74,76 +78,15 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("api/rating")
     Call<StatusResponse> ratingUserTogether(@Field("api_token") String apiToken, @Field("journey_id") int journeyId,
-                                            @Field("rating_value") int ratingValue, @Field("comment") String comment);
+                                            @Field("rating_value") float ratingValue, @Field("comment") String comment);
 
     @FormUrlEncoded
     @POST("api/end-the-trip")
     Call<StatusResponse> endTheTrip(@Field("api_token") String apiToken, @Field("journey_id") int journeyId);
 
-    /*{
-    "status": {
-        "error": 0,
-        "message": "Success"
-    },
-    "user_history_info": [
-        {
-            "success_journey": {
-                "driver": [
-                    {
-                        "journey": {
-                            "id": 31,
-                            "rating_value": 5,
-                            "start_time": {
-                                "date": "2017-12-13 02:31:44.000000",
-                                "timezone_type": 3,
-                                "timezone": "UTC"
-                            },
-                            "finish_time": "2017-12-13 03:43:53",
-                            "cancel_time": null,
-                            "start_location": {
-                                "lat": "10.798132",
-                                "lng": "106.68890699999997"
-                            },
-                            "end_location": {
-                                "lat": "40.741895",
-                                "lng": "-73.989308"
-                            },
-                            "partner": {
-                                "id": 21,
-                                "phone": "01677735016",
-                                "name": "Hội Khánh 016",
-                                "email": null,
-                                "google_id": null,
-                                "facebook_id": null,
-                                "avatar_link": null,
-                                "gender": 1,
-                                "address": null,
-                                "birthday": null
-                            },
-                            "partner_rating": {
-                                "journey_id": 31,
-                                "user_id": 21,
-                                "rating_value": 5,
-                                "comment": "good",
-                                "vehicle_type": 0
-                            }
-                        },
-                        "user_action": {
-                            "rating_value": 5,
-                            "comment": "Lái xe an toàn"
-                        }
-                    }
-                ],
-                "hiker": []
-            },
-            "fail_journey": {
-                "driver": [],
-                "hiker": []
-            }
-        }
-    ]
-}*/
     @FormUrlEncoded
     @POST("users/show-history")
-    Call<History> getHistory(@Field("api_token") String apiToken);
+    Call<History> getHistory(@Field("api_token") String apiToken,@Field("user_type") String userType);
+
+
 }

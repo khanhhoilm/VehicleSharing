@@ -3,206 +3,213 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-
-        android:orientation="vertical">
-
-        <TextView
-
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:gravity="center"
-            android:padding="15dp"
-            android:text="@string/add_request_title"
-            android:textColor="@color/black"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/txtNeederDialogTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:padding="5dp"
-            android:textColor="@color/black"
-            android:textSize="18sp" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1px"
-            android:layout_margin="10dp"
-            android:background="@color/background_color" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <!--EditText
-                android:id="@+id/txtCurLocate"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_span="20"
-                android:hint="Current location" /-->
-
-            <RelativeLayout
-                android:id="@+id/rlCurentLocate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp">
-                <!-- <fragment
-                     android:id="@+id/place_autocomplete_curneeder_fragment"
-                     android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                     android:layout_width="20dp"
-                     android:layout_height="match_parent"
-                     android:layout_marginBottom="5dp"
-                     android:layout_marginTop="5dp"
-                     android:layout_weight="0.9"/>-->
-                <EditText
-                    android:id="@+id/txtCurLocate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_toLeftOf="@+id/imgClearCurLocation"
-                    android:focusable="false"
-                    android:hint="Nơi bắt đầu"
-                    android:paddingLeft="2dp" />
-
-                <ImageView
-                    android:id="@+id/imgClearCurLocation"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerInParent="true"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginTop="5dp"
-
-                    android:src="@drawable/ic_clear_blue_grey_500_36dp" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/rlDesLocate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/rlCurentLocate"
-                android:padding="5dp">
-                <!-- <fragment
-                     android:id="@+id/place_autocomplete_destin_fragment"
-                     android:layout_width="20dp"
-                     android:layout_height="match_parent"
-                     android:layout_marginBottom="5dp"
-                     android:layout_marginTop="5dp"
-                     android:layout_weight="0.9"
-                     android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                     />-->
-                <!--<AutoCompleteTextView
-                    android:id="@+id/autocomplete_des_places"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_weight="0.7"
-                    android:singleLine="true" />-->
-                <EditText
-                    android:id="@+id/txtDesLocate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_toLeftOf="@+id/imgClearDesLocation"
-                    android:focusable="false"
-                    android:hint="Nơi kết thúc"
-                    android:paddingLeft="2dp" />
-
-                <ImageView
-                    android:id="@+id/imgClearDesLocation"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_centerInParent="true"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginTop="5dp"
-                    android:src="@drawable/ic_clear_blue_grey_500_36dp" />
-            </RelativeLayout>
-            <!--fragment
-                android:id="@+id/place_autocomplete_fragment"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-                /-->
-            <!--ImageView
-                android:src="@drawable/ic_directions_car_indigo_a700_24dp"
-                android:layout_height="wrap_content"
-                android:layout_width="wrap_content"
-                /-->
-            <RelativeLayout
-                android:id="@+id/lnTimeType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/rlDesLocate"
-                android:padding="5dp">
-
-                <Spinner
-                    android:id="@+id/spVehicleType"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:gravity="center"
-                    android:paddingLeft="2dp" />
-
-
-                <TextView
-                    android:id="@+id/txtTimeStart"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_toRightOf="@+id/spVehicleType"
-                    android:drawableLeft="@drawable/ic_alarm_blue_grey_500_36dp"
-                    android:focusable="false"
-                    android:gravity="center"
-                    android:paddingLeft="10dp"
-                    android:paddingStart="10dp"
-                    android:textSize="18dp" />
-            </RelativeLayout>
-        </RelativeLayout>
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1px"
-            android:layout_margin="10dp"
-            android:background="@color/background_color" />
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:background="@color/white"
 
-            <Button
-                android:id="@+id/btnAddOK"
-                android:layout_width="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:layout_marginRight="5dp"
-                android:layout_weight="1"
-                android:enabled="true"
-                android:background="@drawable/loginbutton_selector"
-                android:padding="10dp"
-                android:text="@string/add_request"
-                android:textColor="@color/white" />
-
-            <Button
-                android:id="@+id/btnAddCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="5dp"
                 android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/loginbutton_selector"
-                android:padding="10dp"
-                android:text="@string/cancel"
-                android:textColor="@color/white" />
+                android:gravity="center"
+                android:padding="15dp"
+                android:text="@string/add_request_title"
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtNeederDialogTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:padding="5dp"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1px"
+                android:layout_margin="10dp"
+                android:background="@color/background_color" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <!--EditText
+                    android:id="@+id/txtCurLocate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_span="20"
+                    android:hint="Current location" /-->
+
+                <RelativeLayout
+                    android:id="@+id/rlCurentLocate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp">
+                    <!-- <fragment
+                         android:id="@+id/place_autocomplete_curneeder_fragment"
+                         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                         android:layout_width="20dp"
+                         android:layout_height="match_parent"
+                         android:layout_marginBottom="5dp"
+                         android:layout_marginTop="5dp"
+                         android:layout_weight="0.9"/>-->
+                    <EditText
+                        android:id="@+id/txtCurLocate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_toLeftOf="@+id/imgClearCurLocation"
+                        android:focusable="false"
+                        android:hint="Nơi bắt đầu"
+                        android:paddingLeft="2dp" />
+
+                    <ImageView
+                        android:id="@+id/imgClearCurLocation"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerInParent="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginTop="5dp"
+
+                        android:src="@drawable/ic_clear_blue_grey_500_36dp" />
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/rlDesLocate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/rlCurentLocate"
+                    android:padding="5dp">
+                    <!-- <fragment
+                         android:id="@+id/place_autocomplete_destin_fragment"
+                         android:layout_width="20dp"
+                         android:layout_height="match_parent"
+                         android:layout_marginBottom="5dp"
+                         android:layout_marginTop="5dp"
+                         android:layout_weight="0.9"
+                         android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                         />-->
+                    <!--<AutoCompleteTextView
+                        android:id="@+id/autocomplete_des_places"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_weight="0.7"
+                        android:singleLine="true" />-->
+                    <EditText
+                        android:id="@+id/txtDesLocate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_toLeftOf="@+id/imgClearDesLocation"
+                        android:focusable="false"
+                        android:hint="Nơi kết thúc"
+                        android:paddingLeft="2dp" />
+
+                    <ImageView
+                        android:id="@+id/imgClearDesLocation"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_centerInParent="true"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginTop="5dp"
+                        android:src="@drawable/ic_clear_blue_grey_500_36dp" />
+                </RelativeLayout>
+                <!--fragment
+                    android:id="@+id/place_autocomplete_fragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                    /-->
+                <!--ImageView
+                    android:src="@drawable/ic_directions_car_indigo_a700_24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    /-->
+                <RelativeLayout
+                    android:id="@+id/lnTimeType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/rlDesLocate"
+                    android:padding="5dp">
+
+                    <Spinner
+                        android:id="@+id/spVehicleType"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentStart="true"
+                        android:gravity="center"
+                        android:paddingLeft="2dp" />
+
+
+                    <TextView
+                        android:id="@+id/txtTimeStart"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_toRightOf="@+id/spVehicleType"
+                        android:drawableLeft="@drawable/ic_alarm_blue_grey_500_36dp"
+                        android:focusable="false"
+                        android:gravity="center"
+                        android:paddingLeft="10dp"
+                        android:paddingStart="10dp"
+                        android:textSize="18dp" />
+                </RelativeLayout>
+            </RelativeLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1px"
+                android:layout_margin="10dp"
+                android:background="@color/background_color" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnAddOK"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="5dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/loginbutton_selector"
+                    android:enabled="true"
+                    android:padding="10dp"
+                    android:text="@string/add_request"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/btnAddCancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/loginbutton_selector"
+                    android:padding="10dp"
+                    android:text="@string/cancel"
+                    android:textColor="@color/white" />
+            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+       <include layout="@layout/progress_bar_send_request_to_api"/>
+    </RelativeLayout>
 </ScrollView>

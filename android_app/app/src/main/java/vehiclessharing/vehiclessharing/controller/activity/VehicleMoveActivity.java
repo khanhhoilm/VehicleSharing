@@ -1,6 +1,8 @@
 package vehiclessharing.vehiclessharing.controller.activity;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,10 +11,10 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -31,6 +33,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 
+import java.util.Calendar;
 import java.util.HashMap;
 
 import co.vehiclessharing.R;
@@ -43,8 +46,10 @@ import vehiclessharing.vehiclessharing.model.ConfirmRequest;
 import vehiclessharing.vehiclessharing.model.JourneyInfo;
 import vehiclessharing.vehiclessharing.model.RequestInfo;
 import vehiclessharing.vehiclessharing.model.User;
+import vehiclessharing.vehiclessharing.permission.CheckInternetAndLocation;
 import vehiclessharing.vehiclessharing.permission.CheckerGPS;
 import vehiclessharing.vehiclessharing.push.CustomFirebaseMessagingService;
+import vehiclessharing.vehiclessharing.service.AlarmReceiver;
 import vehiclessharing.vehiclessharing.utils.DrawRoute;
 import vehiclessharing.vehiclessharing.utils.Helper;
 
@@ -52,6 +57,13 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         StartTripAPI.StartTripRequestCallback, GetUserInfo.GetInfoUserCallback, EndTheTrip.EndTripRequestCallback {
 
     public static String CALL_FROM_WHAT_ACTIVITY = "call_from_what_activity";
+
+    public static String START_TRIP = "start_the_trip";
+    public static String ALARM_START = "alarm_start";
+    public static String CONFIRM_REQUEST = "confirm_request";
+    public static String RECEIVE_CONFIRM_REQUEST = "receive_confirm_request";
+    public static String JOURNEY_ID="journey_id";
+
     private GoogleMap mGoogleMap;
     private DatabaseHelper databaseHelper;
     private SharedPreferences sharedPreferences;
@@ -59,7 +71,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     private int myUserId;
     private HashMap<String, Marker> listMarker;
     private Location lastLocation = null;
-    private Marker mySourceMarker;
+    private Marker mySourceMarker, hereMarker;
     private Location desLocation;
     private LocationManager locationManager;
     private android.location.LocationListener locationListener;
@@ -72,6 +84,12 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     private CheckerGPS checkerGPS;
     private String callFrom = "";
 
+    public static AlarmManager alarmManager;
+    public static PendingIntent pendingIntent;
+    private SharedPreferences sharedPreferencesScreen;
+    private SharedPreferences.Editor editorScreen;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +99,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         //data receiver null if move from ConfirmActity
         String dataReceive = bundle.getString(CustomFirebaseMessagingService.DATA_RECEIVE, "");
         callFrom = bundle.getString(CALL_FROM_WHAT_ACTIVITY, "");
-           journeyId = bundle.getInt("journey_id", 0);
+        journeyId = bundle.getInt("journey_id", 0);
         if (!dataReceive.equals("")) {
             Gson gson = new Gson();
             confirmRequest = gson.fromJson(dataReceive, ConfirmRequest.class);
@@ -105,7 +123,45 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         checkerGPS = new CheckerGPS(this, this);
         addControls();
         addEvents();
+        if (!callFrom.equals(ALARM_START) && !callFrom.equals(START_TRIP)) {
+            addAlarm();
+        }
+        editorScreen=sharedPreferencesScreen.edit();
+        editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.WAIT_START_TRIP);
+        editorScreen.commit();
+    }
 
+    private void addAlarm() {
+        try {
+            int hour;
+            int minute;
+            String[] time;
+            if (myRequestInfo.getVehicleType() != 0) {
+                time = myRequestInfo.getTimeStart().split(":");
+                hour = Integer.parseInt(time[0]);
+                minute = Integer.parseInt(time[1]);
+            } else {
+                time = yourRequestInfo.getTimeStart().split(":");
+                hour = Integer.parseInt(time[0]);
+                minute = Integer.parseInt(time[1]);
+            }
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, hour);
+            calendar.set(Calendar.MINUTE, minute);
+            Intent myIntent = new Intent(this, AlarmReceiver.class);
+            pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, 0);
+            alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), pendingIntent);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    alarmManager.cancel(pendingIntent);
+                }
+            }, 3000);
+        } catch (Exception e) {
+
+        }
     }
 
     private void addEvents() {
@@ -118,26 +174,55 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
         btnEndTrip = findViewById(R.id.btnEndTrip);
 
-        if (callFrom.equals("confirm_request")) {
+
+        if (callFrom.equals(CONFIRM_REQUEST) || callFrom.equals(ALARM_START)) {
+            if (VehicleMoveActivity.alarmManager != null && VehicleMoveActivity.pendingIntent != null) {
+                VehicleMoveActivity.alarmManager.cancel(VehicleMoveActivity.pendingIntent);
+            }
             if (myRequestInfo.getVehicleType() == 0) {
-                btnStartTrip.setVisibility(View.VISIBLE);
-                btnEndTrip.setVisibility(View.GONE);
+                showStartFloatingButton(true);
             } else {
-                btnStartTrip.setVisibility(View.GONE);
-                btnEndTrip.setVisibility(View.GONE);
+                showStartFloatingButton(false);
             }
-        } else if (callFrom.equals("receive_confirm_request")) {
+        } else if (callFrom.equals(RECEIVE_CONFIRM_REQUEST)) {
             if (confirmRequest.getVehicleType() != 0) {
-                btnStartTrip.setVisibility(View.VISIBLE);
-                btnEndTrip.setVisibility(View.GONE);
+              showStartFloatingButton(true);
             } else {
-                btnStartTrip.setVisibility(View.GONE);
-                btnEndTrip.setVisibility(View.GONE);
+                showStartFloatingButton(false);
             }
-        } else if (callFrom.equals("start_request")) {
-            btnStartTrip.setVisibility(View.GONE);
-            btnEndTrip.setVisibility(View.VISIBLE);
+        } else if (callFrom.equals(START_TRIP)) {
+
+            editorScreen=sharedPreferencesScreen.edit();
+            editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.STARTED_TRIP);
+            editorScreen.commit();
+            showEndButton(true);
+
+        }else {
+           int screenName= sharedPreferencesScreen.getInt(MainActivity.SCREEN_NAME,0);
+           if(screenName==MainActivity.WAIT_START_TRIP){
+               if (myRequestInfo.getVehicleType() == 0) {
+                   showStartFloatingButton(true);
+               } else {
+                   showStartFloatingButton(false);
+               }
+           }else if(screenName==MainActivity.STARTED_TRIP){
+               showEndButton(true);
+           }
         }
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+    }
+    private void showStartFloatingButton(boolean show){
+        if (show) {
+            btnStartTrip.setVisibility(View.VISIBLE);
+            btnEndTrip.setVisibility(View.GONE);
+        } else {
+            btnStartTrip.setVisibility(View.GONE);
+            btnEndTrip.setVisibility(View.GONE);
+        }
+    }
+    private void showEndButton(boolean show){
+        btnStartTrip.setVisibility(View.GONE);
+        btnEndTrip.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -234,7 +319,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2, 1, locationListener);
 
         Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-
+        getMyLocation(myLocation);
         mGoogleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
@@ -248,9 +333,8 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     private void getMyLocation(Location location) {
         LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mySourceMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn bắt đầu").position(myLatLng)
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person_pin_circle_red_700_36dp)));
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 17);
+        hereMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn đang ở đây").position(myLatLng));
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 20);
         mGoogleMap.animateCamera(cameraUpdate);
     }
 
@@ -258,14 +342,14 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         Log.d("onMyLocationChange", "onMyLocationChange update");
 
         LatLng newLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        mySourceMarker.setPosition(newLatLng);
+        hereMarker.setPosition(newLatLng);
 
         mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(newLatLng));
 
     }
 
     public void setMarkerForUser() {
-        if (myRequestInfo != null&&yourRequestInfo!=null) {
+        if (myRequestInfo != null && yourRequestInfo != null) {
             LatLng mySouceLatLng = Helper.convertLatLngLocationToLatLng(myRequestInfo.getSourceLocation());
             LatLng myDestLatLng = Helper.convertLatLngLocationToLatLng(myRequestInfo.getDestLocation());
 
@@ -294,13 +378,13 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
             listMarker.put("Des " + yourRequestInfo.getUserId(), yourDesMarker);
 
             DrawRoute drawRoute = new DrawRoute(this, mGoogleMap);
-            if (myRequestInfo.getVehicleType() == 0) {
+            if (myRequestInfo.getVehicleType() != 0) {
                 drawRoute.drawroadBetween4Location(mySouceLatLng, yourSourceLatLng, yourDesLatLng, myDestLatLng, 1);
             } else {
                 drawRoute.drawroadBetween4Location(yourSourceLatLng, mySouceLatLng, myDestLatLng, yourDesLatLng, 1);
             }
 
-            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mySouceLatLng, 17));
+            mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mySouceLatLng, 20));
         }
     }
 
@@ -315,29 +399,29 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         switch (v.getId()) {
             case R.id.btnStartStrip:
                 startTrip();
+
                 break;
             case R.id.btnEndTrip:
                 SharedPreferences sharedEndTrip = getSharedPreferences(CustomFirebaseMessagingService.SHARE_PREFER_END_TRIP, MODE_PRIVATE);
                 boolean isEndTrip = sharedEndTrip.getBoolean(CustomFirebaseMessagingService.IS_END_TRIP, false);
-               // if (!isEndTrip) {
-                    endTrip();
-               /* } else {
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-                    builder.setAutoCancel(true);
-                    moveToRatingScreen();
-                }*/
+                endTrip();
         }
     }
 
     public void startTrip() {
-        StartTripAPI.getInstance(this).sendNotiStartTripToUserTogether(apiToken);
+        StartTripAPI.getInstance(this).sendNotiStartTripToUserTogether(apiToken, yourRequestInfo.getUserId());
     }
 
     public void endTrip() {
-        if (journeyId != 0) {
-            EndTheTrip.getInstance(this).endTheTripWithUserTogether(apiToken, journeyId);
-        } else {
-            Toast.makeText(this, "journey_id = 0", Toast.LENGTH_SHORT).show();
+        if (CheckInternetAndLocation.isOnline(this)) {
+            if (journeyId != 0) {
+                EndTheTrip.getInstance(this).endTheTripWithUserTogether(apiToken, journeyId);
+
+                editorScreen=sharedPreferencesScreen.edit();
+                editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.RATING);
+                editorScreen.commit();
+            }
+
         }
     }
 
@@ -347,7 +431,13 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
         btnStartTrip.setVisibility(View.GONE);
         journeyId = journeyInfo.getDetail().getJourneyId();
+
         btnEndTrip.setVisibility(View.VISIBLE);
+
+        editorScreen=sharedPreferencesScreen.edit();
+        editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.STARTED_TRIP);
+        editorScreen.putInt(JOURNEY_ID,0);
+        editorScreen.commit();
     }
 
     @Override
@@ -378,6 +468,9 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void endTripFailure(String message) {
+        if(message.equals("unsuccessful")){
+            moveToRatingScreen();
+        }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

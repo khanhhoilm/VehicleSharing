@@ -17,10 +17,11 @@ public class RatingUserTogether {
     public static RatingUserTogether getInstance(RatingCallback callBack) {
 
         ratingCallback = callBack;
+        restManager=new RestManager();
         return new RatingUserTogether();
     }
 
-    public void rating(String apiToken, int journeyId, final int ratingValue, String comment) {
+    public void rating(String apiToken, int journeyId, final float ratingValue, String comment) {
         restManager.getApiService().ratingUserTogether(apiToken, journeyId, ratingValue, comment).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {

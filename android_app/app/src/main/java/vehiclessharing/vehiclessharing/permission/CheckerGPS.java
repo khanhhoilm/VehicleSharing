@@ -45,7 +45,8 @@ public class CheckerGPS {
             } else {
                 // No explanation needed, we can request the permission.
                 ActivityCompat.requestPermissions((Activity) mContext,
-                        new String[]{  Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
+                        new String[]{  Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION},
                         REQ_PERMISSION);
             }
             return false;
@@ -81,7 +82,7 @@ public class CheckerGPS {
             ActivityCompat.requestPermissions(mActivity, new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION},
-                    1);
+                    REQ_PERMISSION);
             return false;
         }
     }

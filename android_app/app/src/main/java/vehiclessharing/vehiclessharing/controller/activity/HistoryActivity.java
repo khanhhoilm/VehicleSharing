@@ -13,11 +13,14 @@ import android.view.View;
 import co.vehiclessharing.R;
 import vehiclessharing.vehiclessharing.api.GetHistoryData;
 import vehiclessharing.vehiclessharing.controller.adapter.HistoryFragmentPagerAdapter;
+import vehiclessharing.vehiclessharing.controller.fragment.HistoryDriverFragment;
+import vehiclessharing.vehiclessharing.controller.fragment.HistoryFragment;
 import vehiclessharing.vehiclessharing.model.UserHistoryInfo;
 
-public class HistoryActivity extends AppCompatActivity implements GetHistoryData.HistoryCallback {
+public class HistoryActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private TabLayout tabLayout;
+    private HistoryFragmentPagerAdapter adapter;
     public static Activity activity;
     private Toolbar toolbar;
 
@@ -64,17 +67,15 @@ public class HistoryActivity extends AppCompatActivity implements GetHistoryData
         viewPager= findViewById(R.id.viewpager);
         tabLayout= findViewById(R.id.sliding_tabs);
 
-        viewPager.setAdapter(new HistoryFragmentPagerAdapter(getSupportFragmentManager(),this));
+        adapter = new HistoryFragmentPagerAdapter(getSupportFragmentManager(),this);
+        adapter.addFragment(HistoryDriverFragment.newInstance(0));
+        adapter.addFragment(HistoryFragment.newInstance(1));
+
+        viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
-    }
 
-    @Override
-    public void getHistorySuccess(UserHistoryInfo userHistoryInfo) {
+      //  viewPager.setCurrentItem(0);
 
     }
 
-    @Override
-    public void getHistoryFailured(String message) {
-
-    }
 }

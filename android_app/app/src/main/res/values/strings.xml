@@ -110,5 +110,9 @@
     <string name="nav_help">Trợ giúp</string>
     <string name="nav_logout">Đăng xuất</string>
 
+    <string name="my_rating">Đánh giá của bạn</string>
+    <string name="your_rating">Đánh giá của người đi chung</string>
+    <string name="no_history">Bạn chưa có chuyến đi nào</string>
+    <string name="no_rating">Chưa có đánh giá</string>
 
 </resources>

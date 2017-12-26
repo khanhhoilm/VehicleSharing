@@ -292,7 +292,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         boolean insertResult = false;
         try {
             SQLiteDatabase db = this.getWritableDatabase();
-            if (!isRequestExists(userId)) {
+            if (isRequestExists(userId)) {
+                deleteRequest(userId);
+            }
+                if (!isRequestExists(userId)) {
                 ContentValues values = new ContentValues();
                 values.put(USER_ID, userId);
                 values.put(SOURCE_LOCATION, requestInfo.getSourceLocation().convertLatLngToStringToDatabase());

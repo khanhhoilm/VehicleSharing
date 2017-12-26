@@ -12,13 +12,13 @@ import android.support.v4.content.ContextCompat;
  */
 
 public class CheckInternetAndLocation {
-    private Context mContext;
-
+  //  private Context mContext;
+/*
     public CheckInternetAndLocation(Context mContext) {
         this.mContext = mContext;
-    }
+    }*/
 
-    public boolean isOnline() {
+    public static boolean isOnline(Context mContext) {
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -28,7 +28,7 @@ public class CheckInternetAndLocation {
         }
         return false;
     }
-    public boolean checkLocationPermission() {
+    public boolean checkLocationPermission(Context mContext) {
         if (ContextCompat.checkSelfPermission(mContext,
                 Manifest.permission.ACCESS_COARSE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {

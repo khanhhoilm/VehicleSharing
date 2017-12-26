@@ -30,13 +30,13 @@ public class ConfirmRequestAPI {
                     //error=0 is success and 1 is failure
                     confirmRequestCallback.confirmRequestSuccess(confirmId);
                 }else {
-                    confirmRequestCallback.confirmRequestFailure(response.body().getStatus().getMessage());
+                    confirmRequestCallback.confirmRequestFailure(response.body().getStatus().getMessage(),confirmId);
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                confirmRequestCallback.confirmRequestFailure("OnFailure");
+                confirmRequestCallback.confirmRequestFailure("OnFailure",confirmId);
             }
         });
     }
@@ -45,7 +45,7 @@ public class ConfirmRequestAPI {
     public interface ConfirmRequestCallback {
         void confirmRequestSuccess(int confirmId);
 
-        void confirmRequestFailure(String message);
+        void confirmRequestFailure(String message,int confirmId);
 
      }
 }

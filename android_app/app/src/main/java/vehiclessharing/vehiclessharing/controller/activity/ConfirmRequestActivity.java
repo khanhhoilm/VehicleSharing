@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ import vehiclessharing.vehiclessharing.authentication.SessionManager;
 import vehiclessharing.vehiclessharing.database.DatabaseHelper;
 import vehiclessharing.vehiclessharing.model.ReceiveRequest;
 import vehiclessharing.vehiclessharing.model.RequestInfo;
+import vehiclessharing.vehiclessharing.permission.CheckInternetAndLocation;
 import vehiclessharing.vehiclessharing.push.CustomFirebaseMessagingService;
 import vehiclessharing.vehiclessharing.utils.Helper;
 import vehiclessharing.vehiclessharing.utils.PlaceHelper;
@@ -39,7 +41,9 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
     private int senderId;
     private DatabaseHelper databaseHelper;
     private RequestInfo yourRequestInfo;
-
+    private ProgressBar progressBar;
+    private SharedPreferences sharedPreferencesScreen;
+    private SharedPreferences.Editor editorScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +77,8 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
         addControls();
         addEvents();
         loadContent();
+        sharedPreferencesScreen=getSharedPreferences(MainActivity.SCREEN_AFTER_BACK,MODE_PRIVATE);
+
     }
 
     private void loadContent() {
@@ -125,6 +131,7 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
         txtNote = findViewById(R.id.txtNote);
         txtDistance = findViewById(R.id.txtDistance);
         btnDirect = findViewById(R.id.btnDirect);
+        progressBar=findViewById(R.id.progressBar);
     }
 
     @Override
@@ -132,15 +139,23 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
 
         switch (v.getId()) {
             case R.id.btnAccept:
-                sendConfirm(2);
+                if (CheckInternetAndLocation.isOnline(this)) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    btnAccept.setEnabled(false);
+                    sendConfirm(2);
+                }
                 break;
             case R.id.btnDeny:
-                sendConfirm(1);
+                if (CheckInternetAndLocation.isOnline(this)) {
+                    progressBar.setVisibility(View.VISIBLE);
+                    btnDeny.setEnabled(false);
+                    sendConfirm(1);
+                }
                 break;
             case R.id.btnDirect:
                 Intent intent = new Intent(this, VehicleMoveActivity.class);
 
-                intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY,"confirm_request");
+                intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY, VehicleMoveActivity.CONFIRM_REQUEST);
                 startActivity(intent);
                 break;
         }
@@ -148,13 +163,15 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
     }
 
     private void sendConfirm(int confirmId) {
-        ConfirmRequestAPI.getInstance(this).sendConfirmRequest(apiToken, receiveRequest.getUserId(), confirmId);
-
+       // if (CheckInternetAndLocation.isOnline(this)) {
+            ConfirmRequestAPI.getInstance(this).sendConfirmRequest(apiToken, receiveRequest.getUserId(), confirmId);
+        //}
     }
 
     @Override
     public void confirmRequestSuccess(int confirmId) {
-        if(confirmId==2) {
+        progressBar.setVisibility(View.GONE);
+        if (confirmId == 2) {
             Toast.makeText(this, getResources().getString(R.string.request_accept_send_success), Toast.LENGTH_SHORT).show();
             yourRequestInfo = new RequestInfo();
             yourRequestInfo.setTimeStart(receiveRequest.getStartTime());
@@ -169,14 +186,46 @@ public class ConfirmRequestActivity extends AppCompatActivity implements View.On
             btnAccept.setVisibility(View.GONE);
             btnDeny.setVisibility(View.GONE);
             btnDirect.setVisibility(View.VISIBLE);
-        }else {
+            editorScreen=sharedPreferencesScreen.edit();
+            editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.CONFIRM_ACCEPT);
+            editorScreen.commit();
+        } else {
+            editorScreen=sharedPreferencesScreen.edit();
+            editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.CONFIRM_DENY);
             finish();
         }
 
     }
 
     @Override
-    public void confirmRequestFailure(String message) {
+    public void confirmRequestFailure(String message, int confirmId) {
+        progressBar.setVisibility(View.GONE);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        if (confirmId == 2) {
+            Toast.makeText(this, getResources().getString(R.string.request_accept_send_success), Toast.LENGTH_SHORT).show();
+            yourRequestInfo = new RequestInfo();
+            yourRequestInfo.setTimeStart(receiveRequest.getStartTime());
+            yourRequestInfo.setSourceLocation(receiveRequest.getStartLocation());
+            yourRequestInfo.setDestLocation(receiveRequest.getEndLocation());
+            yourRequestInfo.setVehicleType(receiveRequest.getVehicleType());
+            if (databaseHelper.insertRequestNotMe(yourRequestInfo, receiveRequest.getUserId())) {
+                Log.d("insertRequest", "success");
+            }
+            Log.d("accept request", "success");
+
+            btnAccept.setVisibility(View.GONE);
+            btnDeny.setVisibility(View.GONE);
+            btnDirect.setVisibility(View.VISIBLE);
+        } else {
+            finish();
+
+            SharedPreferences sharedPreferencesScreen=getSharedPreferences(MainActivity.SCREEN_AFTER_BACK,MODE_PRIVATE);
+            SharedPreferences.Editor editor=sharedPreferencesScreen.edit();
+            editor.putInt(MainActivity.SCREEN_NAME,MainActivity.CONFIRM_DENY);
+            editor.commit();
+            Intent intent=new Intent(this,MainActivity.class);
+
+            startActivity(intent);
+        }
     }
 }

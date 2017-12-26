@@ -1,6 +1,8 @@
 package vehiclessharing.vehiclessharing.controller.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,6 +32,8 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
     private String dataReceive;
     private RequestInfo yourRequestInfo;
     private int journeyId;
+    private SharedPreferences sharedPreferencesScreen;
+    private SharedPreferences.Editor editorScreen;
 
 
     @Override
@@ -51,6 +55,11 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
         addControls();
         addEvents();
         loadContent();
+
+        sharedPreferencesScreen=getSharedPreferences(MainActivity.SCREEN_AFTER_BACK,MODE_PRIVATE);
+        editorScreen=sharedPreferencesScreen.edit();
+        editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.WAIT_START_TRIP);
+        editorScreen.commit();
     }
 
     private void loadContent() {
@@ -89,7 +98,7 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
         if (v.getId() == R.id.btnDirect) {
             Intent intent = new Intent(ReceiveConfirmRequestActivity.this, VehicleMoveActivity.class);
             intent.putExtra(CustomFirebaseMessagingService.DATA_RECEIVE, dataReceive);
-            intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY,"receive_confirm_request");
+            intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY, VehicleMoveActivity.RECEIVE_CONFIRM_REQUEST);
             startActivity(intent);
         }
     }

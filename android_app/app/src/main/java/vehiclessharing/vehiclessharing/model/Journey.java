@@ -22,7 +22,7 @@ public class Journey {
     @Expose
     private StartTime startTime;
 
-    @SerializedName("finnish_time")
+    @SerializedName("finish_time")
     @Expose
     private String finishTime;
 
@@ -38,9 +38,25 @@ public class Journey {
     @Expose
     private LatLngLocation endLocation;
 
-    @SerializedName("parner")
+    @SerializedName("partner")
     @Expose
-    private User parnerInfo;
+    private Partner partner;
+
+    @SerializedName("partner_rating")
+    @Expose
+    private PartnerRating partnerRating;
+
+    public void setPartner(Partner partner) {
+        this.partner = partner;
+    }
+
+    public PartnerRating getPartnerRating() {
+        return partnerRating;
+    }
+
+    public void setPartnerRating(PartnerRating partnerRating) {
+        this.partnerRating = partnerRating;
+    }
 
     public Integer getId() {
         return id;
@@ -97,12 +113,12 @@ public class Journey {
         this.endLocation = endLocation;
     }
 
-    public User getParnerInfo() {
-        return parnerInfo;
+    public Partner getPartner() {
+        return partner;
     }
 
-    public void setParnerInfo(User parnerInfo) {
-        this.parnerInfo = parnerInfo;
+    public void setParnerInfo(Partner parnter) {
+        this.partner = partner;
     }
 
     public class StartTime {
@@ -119,38 +135,50 @@ public class Journey {
         }
     }
 
-    /*{
-                            "start_location": {
-                                "lat": "10.798132",
-                                "lng": "106.68890699999997"
-                            },
-                            "end_location": {
-                                "lat": "40.741895",
-                                "lng": "-73.989308"
-                            },
-                            "partner": {
-                                "id": 21,
-                                "phone": "01677735016",
-                                "name": "Hội Khánh 016",
-                                "email": null,
-                                "google_id": null,
-                                "facebook_id": null,
-                                "avatar_link": null,
-                                "gender": 1,
-                                "address": null,
-                                "birthday": null
-                            },
-                            "partner_rating": {
-                                "journey_id": 31,
+    public class PartnerRating {
+
+      @SerializedName("rating_value")
+        @Expose
+        private Integer ratingValue;
+
+      @SerializedName("comment")
+        @Expose
+        private String comment;
+
+      @SerializedName("vehicle_type")
+        @Expose
+        private Integer vehicleType;
+
+        public Integer getRatingValue() {
+            return ratingValue;
+        }
+
+        public void setRatingValue(Integer ratingValue) {
+            this.ratingValue = ratingValue;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+
+        public Integer getVehicleType() {
+            return vehicleType;
+        }
+
+        public void setVehicleType(Integer vehicleType) {
+            this.vehicleType = vehicleType;
+        }
+    }
+
+    /*                          "journey_id": 31,
                                 "user_id": 21,
                                 "rating_value": 5,
                                 "comment": "good",
                                 "vehicle_type": 0
                             }
-                        },
-                        "user_action": {
-                            "rating_value": 5,
-                            "comment": "Lái xe an toàn"
-                        }
-                    }*/
+                     */
 }

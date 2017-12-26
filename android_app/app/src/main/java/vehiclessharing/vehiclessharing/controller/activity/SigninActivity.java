@@ -77,7 +77,7 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.close_activity:
-                this.finish();
+                this.finishAffinity();
                 break;
         }
 

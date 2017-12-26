@@ -3,6 +3,7 @@ package vehiclessharing.vehiclessharing.controller.activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
@@ -48,8 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import co.vehiclessharing.R;
-import io.realm.Realm;
 import vehiclessharing.vehiclessharing.api.RelateRequestAPI;
+import vehiclessharing.vehiclessharing.api.UpdateListActiveUser;
 import vehiclessharing.vehiclessharing.asynctask.CustomMarkerAsync;
 import vehiclessharing.vehiclessharing.authentication.SessionManager;
 import vehiclessharing.vehiclessharing.controller.fragment.AddRequestFragment;
@@ -68,9 +69,26 @@ import vehiclessharing.vehiclessharing.utils.PlaceHelper;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener,
         View.OnClickListener, OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
-        AddRequestFragment.OnFragmentAddRequestListener, RelateRequestAPI.CancelRequestCallBack, SendRequestFragment.SendRequestCallBack {
+        AddRequestFragment.OnFragmentAddRequestListener, RelateRequestAPI.CancelRequestCallBack,
+        SendRequestFragment.SendRequestCallBack, UpdateListActiveUser.UpdateListActiveUserCallback {
 
     //    private String TAG=MainActivity.this.getLocalClassName();
+    public final static int ADDED_REQUEST = 1;
+    public final static int MAIN_ACTIVITY = 0;
+    public final static int WAIT_CONFIRM = 2;
+    public final static int CONFIRM_ACCEPT = 3;
+    public final static int CONFIRM_DENY = 4;
+    public final static int RECEIVE_CONFRIM_REQUEST = 5;
+    public final static int WAIT_START_TRIP = 6;
+    public final static int STARTED_TRIP = 7;
+    public final static int END_TRIP = 8;
+    public static final int RATING = 9;
+    public static String SCREEN_AFTER_BACK = "screen_after_back";
+    public static String SCREEN_NAME = "screen_name";
+    public static String MY_VEHICLE_TYPE = "my_vehicle_type";
+    private SharedPreferences sharedPreferencesCheckScreen;
+    private SharedPreferences.Editor editorScreen;
+
     private SessionManager sessionManager;
     private NavigationView navigationView = null;
     private Toolbar toolbar = null;
@@ -102,7 +120,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private boolean doubleBackToExitPressedOnce = false;
     private Location myLocation;
     private FrameLayout frameLayoutMarkerInfo;
-
+    private boolean isSending = false;
+    private int vehicleType;
+    private boolean isCancel = false;
+    private Button btnSendArequestToUser;
+    private LocationManager locationManager;
+    private LocationListener locationListener;
 
     final private static int REQ_PERMISSION = 20;//Value request permission
     private static String DIRECTION_KEY_API = "AIzaSyAGjxiNRAHypiFYNCN-qcmUgoejyZPtS9c";
@@ -115,6 +138,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         sessionManager = new SessionManager(MainActivity.this);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         if (!sessionManager.isLoggedIn()) {
             Intent signIn = new Intent(MainActivity.this, SigninActivity.class);
             startActivity(signIn);
@@ -127,6 +152,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         userId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
         sessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
         Log.d("SessionId", "SessionId=" + sessionId);
+
+
+        sharedPreferencesCheckScreen = getSharedPreferences(SCREEN_AFTER_BACK, MODE_PRIVATE);
+        checkOnScreen = sharedPreferencesCheckScreen.getInt(SCREEN_NAME, 0);
+
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
 
         userInfo = databaseHelper.getUser(userId);
@@ -137,6 +167,94 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDatabase = new DatabaseHelper(this);
         addControls();
         addEvents();
+        setScreen();
+    }
+
+    private void setScreen() {
+        checkOnScreen = sharedPreferencesCheckScreen.getInt(SCREEN_NAME, 0);
+        switch (checkOnScreen) {
+            case ADDED_REQUEST:
+                setViewAddedRequest(ADDED_REQUEST);
+                break;
+            case WAIT_CONFIRM:
+                setViewAddedRequest(WAIT_CONFIRM);
+                break;
+            case CONFIRM_DENY:
+                setViewAddedRequest(CONFIRM_DENY);
+                break;
+            case WAIT_START_TRIP:
+                setViewDirect(WAIT_START_TRIP);
+                break;
+            case STARTED_TRIP:
+                setViewDirect(STARTED_TRIP);
+                break;
+            case END_TRIP:
+                setViewRating(END_TRIP);
+                break;
+            case RATING:
+                setViewRating(RATING);
+                break;
+            default:
+                setMainView();
+                break;
+        }
+    }
+
+    private void setMainView() {
+        btnCancelRequest.setVisibility(View.GONE);
+        btnFindVehicles.setVisibility(View.VISIBLE);
+        btnFindPeople.setVisibility(View.VISIBLE);
+    }
+
+    private void setViewRating(int endTrip) {
+        Intent intentRating = new Intent(this, RatingActivity.class);
+        startActivity(intentRating);
+    }
+
+    private void setViewDirect(int waitStartTrip) {
+        Intent intentDirect = new Intent(this, VehicleMoveActivity.class);
+        startActivity(intentDirect);
+    }
+
+    private void setViewAddedRequest(final int addedRequest) {
+        btnCancelRequest.setVisibility(View.VISIBLE);
+        btnFindVehicles.setVisibility(View.GONE);
+        btnFindPeople.setVisibility(View.GONE);
+        final UpdateListActiveUser listActiveUser = UpdateListActiveUser.getInstance(this);
+        Handler handler=new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+
+                int myVehicleType = sharedPreferencesCheckScreen.getInt(MY_VEHICLE_TYPE, 3);
+                if (myVehicleType != 3) {
+                    listActiveUser.getListUpdate(sessionId, myVehicleType);
+                }
+                if (addedRequest == WAIT_CONFIRM) {
+                    isSending = true;
+                }
+                addMarkerAndDrawRoute();
+            }
+        },1000);
+
+    }
+
+    private void addMarkerAndDrawRoute() {
+        RequestInfo requestInfo = mDatabase.getRequestInfo(userId);
+
+        mySource = Helper.convertLatLngLocationToLatLng(requestInfo.getSourceLocation());
+        myDes = Helper.convertLatLngLocationToLatLng(requestInfo.getDestLocation());
+
+        DrawRoute drawRoute = new DrawRoute(this, mGoogleMap);
+        drawRoute.setmSubject(0);
+
+        drawRoute.drawroadBetween2Location(mySource, myDes, 0);
+        try {
+            makeCustomMarkerMyself(mySource, myDes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -228,10 +346,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            Intent intent = new Intent(MainActivity.this, RatingActivity.class);
-            startActivity(intent);
-            // Handle the camera action
-//            fragmentManager.beginTransaction().replace(R.id.frameContainer, new Home_Fragment(), Utils.Home_Fragment).commit();
         } else if (id == R.id.nav_profile) {
             Intent intent = new Intent(MainActivity.this, EditProfileActivity.class);
             startActivity(intent);
@@ -268,16 +382,30 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.btnFindPeople:
                 whatbtnClick = "btnFindPeople";
                 // dialogTitle[0] = "If you want find a vehicle together, you can fill out the form";
-                dialogFragment = AddRequestFragment.newInstance(whatbtnClick);
-                dialogFragment.show(getSupportFragmentManager(), "From Needer");
+                //String presentAddress= null;
+                try {
+                    String presentAddress = PlaceHelper.getInstance(this).getAddressByLatLng(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+                    dialogFragment = AddRequestFragment.newInstance(whatbtnClick, presentAddress);
+                    dialogFragment.show(getSupportFragmentManager(), "From Needer");
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btnFindVehicle:
                 whatbtnClick = "btnFindVehicles";
-                dialogFragment = AddRequestFragment.newInstance(whatbtnClick);
-                dialogFragment.show(getSupportFragmentManager(), "From Grabber");
+                try {
+                    String presentAddress = PlaceHelper.getInstance(this).getAddressByLatLng(new LatLng(myLocation.getLatitude(), myLocation.getLongitude()));
+
+                    dialogFragment = AddRequestFragment.newInstance(whatbtnClick, presentAddress);
+                    dialogFragment.show(getSupportFragmentManager(), "From Grabber");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case R.id.btnCancelRequest:
                 cancelRequest();
+                isCancel = true;
                 break;
         }
 
@@ -318,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
-                    if(mGoogleMap!=null) {
+                    if (mGoogleMap != null) {
                         setLocation();
                     }
                 } else {
@@ -339,9 +467,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mGoogleMap = googleMap;
         mGoogleMap.setOnMarkerClickListener(this);
         try {
-            if (mGoogleMap != null) {
-
-                setLocation();
+            if (mGoogleMap != null&&checkerGPS.checkLocationPermission()) {
+                mGoogleMap.setMyLocationEnabled(true);
+                if (checkOnScreen == 0) {
+                    setLocation();
+                }
 
             }
         } catch (Exception e) {
@@ -353,14 +483,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (checkerGPS.checkLocationPermission()) {
             mGoogleMap.setMyLocationEnabled(true);//Enable mylocation
 
-            LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
             getMyLocation(myLocation);
 
             mGoogleMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
                 @Override
                 public void onMyLocationChange(Location location) {
-                    getMyLocation(location);
+                    setLocationChange(location);
                 }
             });
         }
@@ -371,30 +501,63 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-    private void getMyLocation(Location myLocation) {
+    private void setLocationChange(Location location) {
         if (!changeLocation) {
-            final double[] longitude = {myLocation.getLongitude()};
-            final double[] latitude = {myLocation.getLatitude()};
+            final double[] longitude = {location.getLongitude()};
+            final double[] latitude = {location.getLatitude()};
             LatLng myLatLng = new LatLng(latitude[0], longitude[0]);
+            myLocation = location;
+            if (!location.equals(previousLocation) && previousLocation != null) {
 
-            if (!myLocation.equals(previousLocation) && previousLocation != null) {
-
-                if (myLocation.distanceTo(previousLocation) > 20.0 || !myLocation.equals(previousLocation)) {
+                if (location.distanceTo(previousLocation) > 20.0 || !location.equals(previousLocation)) {
                     if (myMarker != null) {
                         myMarker.remove();
 
                     }
                     myMarker = mGoogleMap.addMarker(new MarkerOptions().position(myLatLng).title(getString(R.string.here)));
-                    //  myMarker.setTag("me");
+                    myMarker.setTag("here");
                     //  markerHashMap.put(userId,myMarker);
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 17);
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(myLatLng);
                     mGoogleMap.animateCamera(cameraUpdate);
-
+                    myLocation = location;
                 }
             }
             if (previousLocation == null) {
-                previousLocation = myLocation;
+                previousLocation = location;
                 myMarker = mGoogleMap.addMarker(new MarkerOptions().position(myLatLng).title(getString(R.string.here)));
+                myMarker.setTag("here");
+                CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLng(myLatLng);
+                mGoogleMap.animateCamera(cameraUpdate);
+            }
+        }
+
+    }
+
+    private void getMyLocation(Location location) {
+        if (!changeLocation) {
+            final double[] longitude = {location.getLongitude()};
+            final double[] latitude = {location.getLatitude()};
+            LatLng myLatLng = new LatLng(latitude[0], longitude[0]);
+            myLocation = location;
+            if (!location.equals(previousLocation) && previousLocation != null) {
+
+                if (location.distanceTo(previousLocation) > 20.0 || !location.equals(previousLocation)) {
+                    if (myMarker != null) {
+                        myMarker.remove();
+
+                    }
+                    myMarker = mGoogleMap.addMarker(new MarkerOptions().position(myLatLng).title(getString(R.string.here)));
+                    myMarker.setTag("here");
+                    //  markerHashMap.put(userId,myMarker);
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 17);
+                    mGoogleMap.animateCamera(cameraUpdate);
+                    myLocation = location;
+                }
+            }
+            if (previousLocation == null) {
+                previousLocation = location;
+                myMarker = mGoogleMap.addMarker(new MarkerOptions().position(myLatLng).title(getString(R.string.here)));
+                myMarker.setTag("here");
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 17);
                 mGoogleMap.animateCamera(cameraUpdate);
             }
@@ -403,22 +566,48 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
 
-    private void makeCustomMarkerMyself(LatLng source, LatLng destination) throws IOException {
-        mGoogleMap.clear();
+    private void makeCustomMarkerMyself(final LatLng source, final LatLng destination) throws IOException {
+        if (mGoogleMap != null) {
+            addMarker(source, destination);
+        } else {
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mGoogleMap != null) {
+                        addMarker(source, destination);
+                    }
+                }
+            }, 500);
+
+        }
+    }
+
+    private void addMarker(LatLng source, LatLng destination) {
         BitmapDescriptor bitmapSource = BitmapDescriptorFactory.fromResource(R.drawable.ic_person_pin_circle_red_700_36dp);
         BitmapDescriptor bitmapDestination = BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_drop_red_700_36dp);
-        Marker sourceMarker = mGoogleMap.addMarker(new MarkerOptions().position(source).title("Chuyến đi của bạn bắt đầu tại: " + PlaceHelper.getInstance(this).getAddressByLatLng(source)).icon(bitmapSource));
-        Marker destinationMarker = mGoogleMap.addMarker(new MarkerOptions().position(destination).title("Chuyến đi kết thúc tại: " + PlaceHelper.getInstance(this).getAddressByLatLng(destination)).icon(bitmapDestination));
-        // userHashMap.put(sourceMarker,null);
-        sourceMarker.setTag("here");
-        destinationMarker.setTag("des");
+        try {
+            Marker sourceMarker = mGoogleMap.addMarker(new MarkerOptions().position(source).title("Chuyến đi của bạn bắt đầu tại: " + PlaceHelper.getInstance(this).getAddressByLatLng(source)).icon(bitmapSource));
+            Marker destinationMarker = mGoogleMap.addMarker(new MarkerOptions().position(destination).title("Chuyến đi kết thúc tại: " + PlaceHelper.getInstance(this).getAddressByLatLng(destination)).icon(bitmapDestination));
+
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(source, 13);
+            mGoogleMap.animateCamera(cameraUpdate);
+
+            sourceMarker.setTag("here");
+            destinationMarker.setTag("des");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
         Log.d("onMarkerClick", "success");
         try {
-            displayInfoMarkerClick(marker);
+            if (!marker.getTag().equals("here") && !marker.getTag().equals("des")) {
+                displayInfoMarkerClick(marker);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -451,7 +640,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         txtDistance = (TextView) findViewById(R.id.txtDistance);
         btnsend = (Button) findViewById(R.id.btnSendRequest);
         btncancel = (Button) findViewById(R.id.btnCancelSendRequest);
-
+        btnSendArequestToUser = btnsend;
         String time = "";
         int vehicleType;
 
@@ -472,6 +661,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             txtSourceLocation.setText(sourceAddress);
             txtDeslocation.setText(destinationAddress);
             txtTime.setText(time);
+
+            if (isSending) {
+                btnsend.setVisibility(View.GONE);
+                btnsend.setAlpha(0.5f);
+            } else {
+                btnsend.setVisibility(View.VISIBLE);
+                btnsend.setAlpha(1.0f);
+            }
+
             switch (vehicleType) {
                 case 0:
                     imgVehicleType.setImageResource(R.drawable.ic_accessibility_indigo_700_24dp);
@@ -507,6 +705,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Location location = new Location(sourceAddress);
             location.setLatitude(sourceLocation.latitude);
             location.setLongitude(sourceLocation.longitude);
+            if(myLocation==null){
+                myLocation=new Location("MyLocation");
+                myLocation.setLatitude(mySource.latitude);
+                myLocation.setLongitude(mySource.longitude);
+            }
             float distance = Helper.getKiloMeter(myLocation.distanceTo(location));
             txtDistance.setText(String.valueOf(distance) + " km");
 
@@ -514,6 +717,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 @Override
                 public void onClick(View v) {
                     confirmSureSendRequestToAnotherUser(anotherUser);
+
                 }
             });
             btncancel.setOnClickListener(new View.OnClickListener() {
@@ -535,55 +739,78 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void addRequestSuccess(LatLng cur, LatLng des, String time, int type, List<ActiveUser> list) {
-        String requestName = "";
-        if (type == 0) {
-            requestName = "Bạn đã tạo thành công yêu cầu tìm xe";
-        } else {
-            requestName = "Bạn đã tạo thành công yêu cầu cho đi nhờ xe";
-        }
-        Toast.makeText(this, requestName, Toast.LENGTH_SHORT).show();
-
-        frameLayoutMarkerInfo.setVisibility(View.GONE);
-        btnCancelRequest.setVisibility(View.VISIBLE);
-
-        if (list.size() > 0) {
-            listActiveUser = list;
-
-        }
-        changeLocation = true;
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cur, 17);
-        mGoogleMap.animateCamera(cameraUpdate);
-
-        DrawRoute drawRoute = new DrawRoute(this, mGoogleMap);
-        drawRoute.setmSubject(0);
-        mySource = cur;
-        myDes = des;
-        drawRoute.drawroadBetween2Location(cur, des, 0);
+    public void addRequestSuccess(LatLng cur, LatLng des, String time, final int type, List<ActiveUser> list) {
         try {
-            makeCustomMarkerMyself(cur, des);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //drawroadBetween2Location(curLocation, desLocation);
-        hideButtonFindVehicleAndPeople();
-        if (list.size() > 0) {
-            for (ActiveUser activeUser : list) {
-                new CustomMarkerAsync(this).execute(activeUser);
-            }
-        }
-        RequestInfo requestInfo = new RequestInfo();
-        requestInfo.setVehicleType(type);
-        requestInfo.setTimeStart(time);
-        requestInfo.setSourceLocation(Helper.convertLatLngToLatLngLocation(cur));
-        requestInfo.setDestLocation(Helper.convertLatLngToLatLngLocation(des));
 
-        CheckWriteStorage.getInstance(this, this).isStoragePermissionGranted();
-        mDatabase.insertRequest(requestInfo, userId);
-        //ForGraber.getInstance().getAllNeederNear(this, mUser.getUid());
-        myLocation = new Location("MyLocation");
-        myLocation.setLatitude(cur.latitude);
-        myLocation.setLongitude(cur.longitude);
+
+            vehicleType = type;
+            String requestName = "";
+            if (type == 0) {
+                requestName = "Bạn đã tạo thành công yêu cầu tìm xe";
+            } else {
+                requestName = "Bạn đã tạo thành công yêu cầu cho đi nhờ xe";
+            }
+            Toast.makeText(this, requestName, Toast.LENGTH_SHORT).show();
+
+            frameLayoutMarkerInfo.setVisibility(View.GONE);
+            btnCancelRequest.setVisibility(View.VISIBLE);
+
+            if (list != null && list.size() > 0) {
+                listActiveUser = list;
+            }
+            changeLocation = true;
+            CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(cur, 17);
+            mGoogleMap.animateCamera(cameraUpdate);
+
+            try {
+                makeCustomMarkerMyself(cur, des);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            DrawRoute drawRoute = new DrawRoute(this, mGoogleMap);
+            drawRoute.setmSubject(0);
+
+            drawRoute.drawroadBetween2Location(cur, des, 0);
+
+            hideButtonFindVehicleAndPeople();
+            if (list.size() > 0) {
+                for (ActiveUser activeUser : list) {
+                    new CustomMarkerAsync(this).execute(activeUser);
+                }
+            }
+            RequestInfo requestInfo = new RequestInfo();
+            requestInfo.setVehicleType(type);
+            requestInfo.setTimeStart(time);
+            requestInfo.setSourceLocation(Helper.convertLatLngToLatLngLocation(cur));
+            requestInfo.setDestLocation(Helper.convertLatLngToLatLngLocation(des));
+
+            CheckWriteStorage.getInstance(this, this).isStoragePermissionGranted();
+            mDatabase.insertRequest(requestInfo, userId);
+            //ForGraber.getInstance().getAllNeederNear(this, mUser.getUid());
+            myLocation = new Location("MyLocation");
+            myLocation.setLatitude(cur.latitude);
+            myLocation.setLongitude(cur.longitude);
+        } catch (Exception e) {
+            Toast.makeText(this, "addRequestSuccess interface error", Toast.LENGTH_SHORT).show();
+        }
+
+        final UpdateListActiveUser listActiveUser = UpdateListActiveUser.getInstance(this);
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                listActiveUser.getListUpdate(sessionId, type);
+            }
+        }, 30000);
+
+        editorScreen = sharedPreferencesCheckScreen.edit();
+        editorScreen.putInt(SCREEN_NAME, ADDED_REQUEST);
+        editorScreen.putInt(MY_VEHICLE_TYPE, vehicleType);
+        editorScreen.commit();
+
+
+       // locationManager.removeUpdates(locationListener);
+
     }
 
     @Override
@@ -594,6 +821,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void cancelRequestSuccess(boolean success) {
         //if(success) {
+        isSending = false;
         btnCancelRequest.setVisibility(View.GONE);
         btnFindPeople.setVisibility(View.VISIBLE);
         btnFindVehicles.setVisibility(View.VISIBLE);
@@ -608,21 +836,87 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             markerHashMap.clear();
         }
         mGoogleMap.clear();
-        LocationListener locationListener = new LocationListener() {
+        locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
+                getMyLocation(location);
                 Log.d("onLocationChanged", "onLocationChanged");
             }
         };
         mDatabase.deleteRequest(userId);
         setLocation();
 
-    }
 
+        SharedPreferences.Editor editor = sharedPreferencesCheckScreen.edit();
+        editor.putInt(SCREEN_NAME, MAIN_ACTIVITY);
+        editor.commit();
+    }
 
     @Override
     public void sendRequestSuccess() {
+        isSending = true;
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isSending) {
+                    isSending = false;
+                    // sendRequestSuccess();
+                    checkOnScreen = sharedPreferencesCheckScreen.getInt(SCREEN_NAME, 0);
+                    if (checkOnScreen == WAIT_CONFIRM) {
+
+                        editorScreen = sharedPreferencesCheckScreen.edit();
+                        editorScreen.putInt(SCREEN_NAME, ADDED_REQUEST);
+                        editorScreen.commit();
+
+                        Toast.makeText(MainActivity.this, "Đã quá 5' nhưng user không phản hồi bạn có thể gửi 1 request khác", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+        }, 300000);
+
         frameLayoutMarkerInfo.setVisibility(View.GONE);
         btnCancelRequest.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void getListActiveUserUpdateSuccess(List<ActiveUser> activeUsers) {
+
+        if (!isCancel) {
+            if (activeUsers.size() > 0) {
+                for (ActiveUser activeUser : activeUsers) {
+                    if (markerHashMap.get(activeUser) != null) {
+                        markerHashMap.get(activeUser).remove();
+                    }
+                    new CustomMarkerAsync(this).execute(activeUser);
+                }
+            }
+
+            final UpdateListActiveUser listActiveUser = UpdateListActiveUser.getInstance(this);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkOnScreen == ADDED_REQUEST || checkOnScreen == WAIT_CONFIRM) {
+                        listActiveUser.getListUpdate(sessionId, vehicleType);
+                    }
+                }
+            }, 30000);
+        }
+    }
+
+    @Override
+    public void getListActiveUserFailure(String message) {
+        if (!isCancel) {
+            final UpdateListActiveUser listActiveUser = UpdateListActiveUser.getInstance(this);
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    listActiveUser.getListUpdate(sessionId, vehicleType);
+                }
+            }, 30000);
+        }
     }
 }

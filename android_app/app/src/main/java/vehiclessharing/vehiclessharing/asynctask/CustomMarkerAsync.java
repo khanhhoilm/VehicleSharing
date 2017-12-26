@@ -84,7 +84,7 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
         if (android.os.Debug.isDebuggerConnected())
             android.os.Debug.waitForDebugger();
         //    super.onPostExecute(bitmap);
-        Bitmap bitmap1 = getCustomMarkerView(bitmap);
+        Bitmap bitmap1 = null;
 
         LatLng source = new LatLng(0, 0);
         Marker customMarker = null;
@@ -92,12 +92,13 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
 
         if (activeUser != null && activeUser.getRequestInfo() != null && activeUser.getUserInfo() != null) {
             try {
+                bitmap1 = getCustomMarkerView(bitmap, activeUser.getRequestInfo().getVehicleType());
                 source = new LatLng(Double.parseDouble(activeUser.getRequestInfo().getSourceLocation().getLat()), Double.parseDouble(activeUser.getRequestInfo().getSourceLocation().getLng()));
                 customMarker = googleMap.addMarker(new MarkerOptions().position(source).title(activeUser.getUserInfo().getName())
                         .icon(BitmapDescriptorFactory.fromBitmap(bitmap1)));
                 customMarker.setTag("another");
                 MainActivity.markerHashMap.put(activeUser, customMarker);
-                MainActivity.userHashMap.put(customMarker,activeUser);
+                MainActivity.userHashMap.put(customMarker, activeUser);
             } catch (Exception e) {
 
             }
@@ -111,12 +112,24 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
 
     }
 
-    private Bitmap getCustomMarkerView(Bitmap bitmap) {
+    private Bitmap getCustomMarkerView(Bitmap bitmap, int vehicleType) {
         View customMarkerView = ((LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
         ImageView markerImageView = (ImageView) customMarkerView.findViewById(R.id.profile_image);
 
         if (bitmap == null) {
-            markerImageView.setImageResource(R.drawable.temp);
+            switch (vehicleType) {
+                case 0:
+                    markerImageView.setImageResource(R.drawable.ic_accessibility_cyan_900_48dp);
+                    break;
+                case 1:
+                    markerImageView.setImageResource(R.drawable.ic_motorcycle_cyan_900_48dp);
+                    break;
+                case 2:
+                    markerImageView.setImageResource(R.drawable.ic_directions_car_cyan_900_48dp);
+                    break;
+                default:
+                    markerImageView.setImageResource(R.drawable.temp);
+            }
         } else {
             try {
                 markerImageView.setImageBitmap(bitmap);

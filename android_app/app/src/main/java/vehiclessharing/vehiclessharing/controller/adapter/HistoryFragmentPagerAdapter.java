@@ -9,8 +9,11 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 
+import java.util.ArrayList;
+import java.util.List;
 
 import co.vehiclessharing.R;
+import vehiclessharing.vehiclessharing.controller.fragment.HistoryDriverFragment;
 import vehiclessharing.vehiclessharing.controller.fragment.HistoryFragment;
 
 /**
@@ -19,6 +22,7 @@ import vehiclessharing.vehiclessharing.controller.fragment.HistoryFragment;
 
 public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 2;
+    private List<Fragment> mFragmentList = new ArrayList<>();
     private String tabTitles[] = new String[]{"Khi là Người chở", "Khi là người quá giang"};
     private Context mContext;
 
@@ -29,13 +33,18 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-
-      /*  if (position==0)
-        {
-            return HistoryOfGraber_Fragment.newInstance(position + 1);
+        Fragment fragment=null;
+        if (position == 0) {
+            fragment= HistoryDriverFragment.newInstance(position);
+        } else {
+            fragment= HistoryFragment.newInstance(position);
         }
-        return HistoryOfNeeder_Fragment.newInstance(position + 1);*/
-      return HistoryFragment.newInstance(position+1);
+          return fragment;
+    }
+
+    public void addFragment(Fragment fragment) {
+        mFragmentList.add(fragment);
+        //    mFragmentTitleList.add(title);
     }
 
     @Override
@@ -46,11 +55,10 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
     @Override
     public CharSequence getPageTitle(int position) {
 
-        Drawable image=null;
+        Drawable image = null;
         if (position == 0) {
             image = mContext.getResources().getDrawable(R.drawable.ic_directions_car_indigo_a700_24dp);
-        } else if(position==1)
-        {
+        } else if (position == 1) {
             image = mContext.getResources().getDrawable(R.drawable.ic_accessibility_indigo_700_24dp);
         }
 

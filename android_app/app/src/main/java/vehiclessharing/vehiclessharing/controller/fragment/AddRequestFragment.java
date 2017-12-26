@@ -24,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -51,12 +52,11 @@ import co.vehiclessharing.R;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import vehiclessharing.vehiclessharing.api.ApiService;
-import vehiclessharing.vehiclessharing.controller.adapter.PlaceAutocompleteAdapter;
-import vehiclessharing.vehiclessharing.controller.adapter.SpinerVehicleTypeAdapter;
 import vehiclessharing.vehiclessharing.api.RelateRequestAPI;
 import vehiclessharing.vehiclessharing.api.RestManager;
 import vehiclessharing.vehiclessharing.authentication.SessionManager;
+import vehiclessharing.vehiclessharing.controller.adapter.PlaceAutocompleteAdapter;
+import vehiclessharing.vehiclessharing.controller.adapter.SpinerVehicleTypeAdapter;
 import vehiclessharing.vehiclessharing.model.ActiveUser;
 import vehiclessharing.vehiclessharing.model.RequestResult;
 import vehiclessharing.vehiclessharing.utils.PlaceHelper;
@@ -75,6 +75,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String WHAT_BTN_CLICK = "what_btn_click";
+    private static final String PRESENT_ADDRESS = "present_address";
     private String getWhatBtnClick = "";
     private TextView txtTitle, txtTimeStart;
 
@@ -88,9 +89,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
     private int DES_PLACE_AUTOCOMPLETE_REQUEST_CODE = 1;
     private RelateRequestAPI.CancelRequestCallBack cancelRequestCallBack;
     private int userId;
-    private String sessionId="",refreshedToken="";
-    //private AutoCompleteTextView mAutocompleteCurLocation,mAutocompleteDesLocation;
-
+    private String sessionId = "", refreshedToken = "";
     private Context mContext;
 
 
@@ -105,7 +104,8 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
     private RestManager mManager;
     private String currentDay;
     private int vehicleType = 1;
-
+    private String presentAdress = "";
+    private ProgressBar progressBar;
     private OnFragmentAddRequestListener mListener;
 
     public AddRequestFragment() {
@@ -120,10 +120,11 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
      * @return A new instance of fragment AddRequestFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static AddRequestFragment newInstance(String btnClick) {
+    public static AddRequestFragment newInstance(String btnClick, String presentAddress) {
         AddRequestFragment fragment = new AddRequestFragment();
         Bundle args = new Bundle();
         args.putString(WHAT_BTN_CLICK, btnClick);
+        args.putString(PRESENT_ADDRESS, presentAddress);
         fragment.setArguments(args);
         return fragment;
     }
@@ -133,6 +134,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             getWhatBtnClick = getArguments().getString(WHAT_BTN_CLICK);
+            presentAdress = getArguments().getString(PRESENT_ADDRESS);
         }
     }
 
@@ -148,6 +150,13 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         View view = inflater.inflate(R.layout.fragment_add_request, container, false);
 
         addControls(view);
+        refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        Log.d("Token FCM", "Token Value: " + refreshedToken);
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SessionManager.PREF_NAME_LOGIN, Context.MODE_PRIVATE);
+        userId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
+        sessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
+        Log.d("User Info", "User_id: " + String.valueOf(userId) + ", api_token: " + String.valueOf(sessionId));
 
         // Inflate the layout for this fragment
         return view;
@@ -175,6 +184,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         txtTimeStart = (TextView) view.findViewById(R.id.txtTimeStart);
         btnOk = (Button) view.findViewById(R.id.btnAddOK);
         btnCancel = (Button) view.findViewById(R.id.btnAddCancel);
+        progressBar=view.findViewById(R.id.progressBar);
 
 
         imgClearCurLocation = (ImageView) view.findViewById(R.id.imgClearCurLocation);
@@ -191,8 +201,12 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
         mDrawable = getResources().getDrawable(R.drawable.ic_warning_red_600_24dp);
         mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
-        String curPosition = PlaceHelper.getInstance(mContext).getCurrentPlace();
-        txtCurLocation.setText(curPosition);
+        //String curPosition = PlaceHelper.getInstance(mContext, getActivity()).getCurrentPlace();
+        if (!presentAdress.equals("")) {
+            txtCurLocation.setText(presentAdress);
+        } else {
+            txtCurLocation.setText(PlaceHelper.getInstance(mContext).getCurrentPlace());
+        }
         spType = (Spinner) view.findViewById(R.id.spVehicleType);
         List<String> type = new ArrayList<>();
         type.add("Xe máy");
@@ -227,14 +241,6 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
-
-        refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d("Token FCM", "Token Value: " + refreshedToken);
-
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SessionManager.PREF_NAME_LOGIN, Context.MODE_PRIVATE);
-        userId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
-        sessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
-        Log.d("User Info", "User_id: " + String.valueOf(userId) + ", api_token: " + String.valueOf(sessionId));
 
     }
 
@@ -285,6 +291,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
                 boolean checkEmpty = checkValidation();
                 if (!checkEmpty) {
                     btnOk.setEnabled(false);
+                    progressBar.setVisibility(View.VISIBLE);
                     sendRequestToServer();
                 }
                 break;
@@ -304,58 +311,80 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
     }
 
     private void sendRequestToServer() {
-        switch (getWhatBtnClick) {
-            case "btnFindPeople":
-                vehicleType = spType.getSelectedItemPosition() + 1;
-                //   txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_people));
-                break;
-            case "btnFindVehicles":
-                vehicleType = 0;
-                //  txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_vehicle));
+        try {
+            switch (getWhatBtnClick) {
+                case "btnFindPeople":
+                    vehicleType = spType.getSelectedItemPosition() + 1;
+                    //   txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_people));
+                    break;
+                case "btnFindVehicles":
+                    vehicleType = 0;
+                    //  txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_vehicle));
 
-        }
+            }
 
-        final LatLng srcLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtCurLocation.getText().toString());
-        final String sourLocation = "{\"lat\":\"" + String.valueOf(srcLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(srcLatLng.longitude) + "\"}";
+            final LatLng srcLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtCurLocation.getText().toString());
+            final String sourLocation = "{\"lat\":\"" + String.valueOf(srcLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(srcLatLng.longitude) + "\"}";
 
-        final LatLng desLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtDesLocation.getText().toString());
-        final String desLocation = "{\"lat\":\"" + String.valueOf(desLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(desLatLng.longitude) + "\"}";
+            final LatLng desLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtDesLocation.getText().toString());
+            final String desLocation = "{\"lat\":\"" + String.valueOf(desLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(desLatLng.longitude) + "\"}";
 
-        final String time = txtTimeStart.getText().toString();
-        String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
-        String deviceToken = FirebaseInstanceId.getInstance().getToken();
+            final String time = txtTimeStart.getText().toString();
+            String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
+            String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
-        Log.d("Token FCM", "Token Value: " + deviceToken);
-        Log.d("DeviceId", "Device Id Value: " + deviceId);
+            Log.d("Token FCM", "Token Value: " + deviceToken);
+            Log.d("DeviceId", "Device Id Value: " + deviceId);
 
-        mManager.getApiService().registerRequest(userId, sourLocation, desLocation, time, sessionId, deviceId, vehicleType, deviceToken).enqueue(new Callback<RequestResult>() {
-            @Override
-            public void onResponse(Call<RequestResult> call, Response<RequestResult> response) {
-                if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
-                    Log.d("registerRequest","registerRequest success");
-                    List<ActiveUser> activeUserList = new ArrayList<ActiveUser>();
-                    //cancelRequestCallBack.addRequestSuccessful(sourLocation, desLocation, time, vehicleType, response.body().getActiveUsers());
+            mManager.getApiService().registerRequest(userId, sourLocation, desLocation, time, sessionId, deviceId, vehicleType, deviceToken).enqueue(new Callback<RequestResult>() {
+                @Override
+                public void onResponse(Call<RequestResult> call, Response<RequestResult> response) {
+                    try {
+                        if (response.isSuccessful() && response.body() != null && response.body().getStatus().getError() == 0) {
+                            progressBar.setVisibility(View.GONE);
+                            Log.d("registerRequest", "registerRequest success");
+                            List<ActiveUser> activeUserList = new ArrayList<ActiveUser>();
+                            //cancelRequestCallBack.addRequestSuccessful(sourLocation, desLocation, time, vehicleType, response.body().getActiveUsers());
+                            List<ActiveUser> listActive = new ArrayList<>();
+                            if (response.body().getActiveUsers() != null && response.body().getActiveUsers().size() > 0) {
+                                listActive = response.body().getActiveUsers();
+                            } else {
+                                String vType = "";
+                                if (vehicleType == 0) {
+                                    vType = "chia sẻ xe";
+                                } else {
+                                    vType = "cần xe chia sẻ";
+                                }
+                                Toast.makeText(mContext, "Không có người nào đang " + vType, Toast.LENGTH_SHORT).show();
+                            }
+                            mListener.addRequestSuccess(srcLatLng, desLatLng, time, vehicleType,listActive);
 
-                    mListener.addRequestSuccess(srcLatLng, desLatLng, time, vehicleType, response.body().getActiveUsers());
-                    if (isAdded()) {
-                        dismiss();
+                            if (isAdded()) {
+                                dismiss();
+                            }
+
+                        } else {
+                            Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
+                            btnOk.setEnabled(true);
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(mContext, "error send request to server", Toast.LENGTH_SHORT).show();
                     }
-                } else {
-                    Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
-                    btnOk.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
                 }
 
-            }
-
-            @Override
-            public void onFailure(Call<RequestResult> call, Throwable t) {
-                if(isAdded()) {
-                    btnOk.setEnabled(true);
-                    Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
+                @Override
+                public void onFailure(Call<RequestResult> call, Throwable t) {
+                    progressBar.setVisibility(View.GONE);
+                    if (isAdded()) {
+                        btnOk.setEnabled(true);
+                        Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
-
+            });
+        } catch (Exception e) {
+            Toast.makeText(mContext, "send request to server ", Toast.LENGTH_SHORT).show();
+        }
         //}
         //  RelateRequestAPI.getInstance(this).addRequest(userId, sourLocation, desLocation, time, sessionId, deviceId, vehicleType,deviceToken );
     }

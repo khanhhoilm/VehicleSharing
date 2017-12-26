@@ -3,32 +3,47 @@ package vehiclessharing.vehiclessharing.model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 /**
  * Created by Hihihehe on 12/13/2017.
  */
 
 public class UserHistoryInfo {
-    @SerializedName("success_journey")
+    @SerializedName("success")
     @Expose
-    private SuccessJourney successJourney;
+    private List<JourneyDone> successJourney;
 
-    @SerializedName("fail_journey")
+    @SerializedName("fail")
     @Expose
-    private FailJourney failJourney;
+    private List<JourneyDone> failJourney;
 
-    public SuccessJourney getSuccessJourney() {
+    @SerializedName("user_type")
+    @Expose
+    private String userType;
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
+
+    public List<JourneyDone> getSuccessJourney() {
         return successJourney;
     }
 
-    public void setSuccessJourney(SuccessJourney successJourney) {
+
+    public void setSuccessJourney(List<JourneyDone> successJourney) {
         this.successJourney = successJourney;
     }
 
-    public FailJourney getFailJourney() {
+    public List<JourneyDone> getFailJourney() {
         return failJourney;
     }
 
-    public void setFailJourney(FailJourney failJourney) {
+    public void setFailJourney(List<JourneyDone> failJourney) {
         this.failJourney = failJourney;
     }
 }

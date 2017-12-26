@@ -57,8 +57,8 @@ public class DrawRoute implements RoutingListener {
     public void drawroadBetween2Location(LatLng latLng1, LatLng latLng2, int subject) {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
-        CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
-        if (!check.isOnline() || !MainActivity.checkerGPS.checkLocationPermission() ||
+      //  CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
+        if (!CheckInternetAndLocation.isOnline(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
         }
@@ -74,8 +74,8 @@ public class DrawRoute implements RoutingListener {
     public void drawroadBetween4Location(LatLng latLng1, LatLng latLng2, LatLng latLng3, LatLng latLng4, int subject) {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
-        CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
-        if (!check.isOnline() || !MainActivity.checkerGPS.checkLocationPermission() ||
+       // CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
+        if (!CheckInternetAndLocation.isOnline(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
         }

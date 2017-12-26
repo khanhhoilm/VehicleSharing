@@ -3,11 +3,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <android.support.v7.widget.RecyclerView
+    <TextView
+        android:id="@+id/txtFailure"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/rcHistory"
-        android:layout_margin="10dp">
+        android:layout_height="wrap_content"
+        android:text="@string/no_history"
+        android:gravity="center"
+        android:visibility="gone"/>
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/rcHistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp">
 
-    </android.support.v7.widget.RecyclerView>
+        </android.support.v7.widget.RecyclerView>
+    </android.support.v4.widget.SwipeRefreshLayout>
 </LinearLayout>

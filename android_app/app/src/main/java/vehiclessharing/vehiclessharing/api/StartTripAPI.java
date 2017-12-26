@@ -24,8 +24,8 @@ public class StartTripAPI {
     private StartTripAPI() {
     }
 
-    public void sendNotiStartTripToUserTogether(String apiToken) {
-        restManager.getApiService().startTheTrip(apiToken).enqueue(new Callback<StartStripResponse>() {
+    public void sendNotiStartTripToUserTogether(String apiToken,int partnerId) {
+        restManager.getApiService().startTheTrip(apiToken,partnerId).enqueue(new Callback<StartStripResponse>() {
             @Override
             public void onResponse(Call<StartStripResponse> call, Response<StartStripResponse> response) {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {

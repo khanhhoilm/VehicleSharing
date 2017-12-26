@@ -61,7 +61,7 @@ public class Signin_Fragment extends Fragment implements View.OnClickListener {
     private RestManager mManager;
     private ProgressDialog mProgress;
     private SessionManager session;
-
+    private int timeLoginFailed=0;
 
     public Signin_Fragment() {
     }
@@ -235,7 +235,15 @@ public class Signin_Fragment extends Fragment implements View.OnClickListener {
                             startActivity(intent);
                             break;
                         case 1:
-                            new CustomToast().Show_Toast(getActivity(), view, "Số điện thoại hoặc mật khẩu không chính xác. Vui lòng thử lại");
+                            String warnningMessage="";
+                            if(timeLoginFailed<3) {
+                                warnningMessage="Số điện thoại hoặc mật khẩu không chính xác. Vui lòng thử lại";
+                            }else {
+                                warnningMessage="Bạn đã nhập sai thông tin đăng nhập quá 3 lần. Nếu chưa có tài khoản vui lòng vào trang đăng ký";
+                            }
+                            new CustomToast().Show_Toast(getActivity(), view, warnningMessage);
+
+                            timeLoginFailed++;
                             //Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.no_internet), Toast.LENGTH_SHORT).show();
                             mProgress.dismiss();
                             break;
