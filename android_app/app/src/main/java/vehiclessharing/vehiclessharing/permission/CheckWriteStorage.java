@@ -13,42 +13,42 @@ import android.util.Log;
  */
 
 public class CheckWriteStorage {
-    private static CheckWriteStorage checkWriteStorage=null;
+    private static CheckWriteStorage mCheckWriteStorage = null;
     private static Context mContext;
     private static Activity mActivity;
-    public static int STORAGE_PERMISSTION_CODE=1;
+    public static int STORAGE_PERMISSTION_CODE = 1;
 
-   public static CheckWriteStorage getInstance(Context context,Activity activity){
-       checkWriteStorage=new CheckWriteStorage();
-       mContext=context;
-       mActivity=activity;
-       return checkWriteStorage;
-   }
+    public static CheckWriteStorage getInstance(Context context, Activity activity) {
+        mCheckWriteStorage = new CheckWriteStorage();
+        mContext = context;
+        mActivity = activity;
+        return mCheckWriteStorage;
+    }
 
-    private boolean checkSelfPermission(String permission){
-        if(ActivityCompat.checkSelfPermission(mContext,permission) == PackageManager.PERMISSION_GRANTED) {
+    private boolean checkSelfPermission(String permission) {
+        if (ActivityCompat.checkSelfPermission(mContext, permission) == PackageManager.PERMISSION_GRANTED) {
             Log.v("checkSelfPermission", "Permission is granted");
             //File write logic here
         }
         return true;
     }
+
     public boolean isStoragePermissionGranted() {
-        boolean isCheck=false;
+        boolean isCheck = false;
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                Log.v("isStoragePermission","Permission is granted");
-                isCheck= true;
+                Log.v("isStoragePermission", "Permission is granted");
+                isCheck = true;
             } else {
 
-                Log.v("isStoragePermission","Permission is revoked");
+                Log.v("isStoragePermission", "Permission is revoked");
                 ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, STORAGE_PERMISSTION_CODE);
-               // return false;
+                // return false;
             }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-            Log.v("isStoragePermission","Permission is granted");
+        } else { //permission is automatically granted on sdk<23 upon installation
+            Log.v("isStoragePermission", "Permission is granted");
 
-            isCheck= true;
+            isCheck = true;
         }
         return isCheck;
     }

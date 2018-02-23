@@ -1,6 +1,5 @@
 package vehiclessharing.vehiclessharing.view.fragment;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -32,17 +31,19 @@ public class CancelTripDialog extends DialogFragment implements View.OnClickList
     private static final String VEHICLE_TYPE = "vehicle_type";
 
     // TODO: Rename and change types of parameters
-    private String apiToken;
-    private int vehicleType;
-    private EditText txtNote;
-    private Button btnSend, btnCancel;
-    private static CancelTripAPI.CancelTripInterface cancelTripInterface;
+    private static CancelTripAPI.CancelTripInterface sCancelTripInterface;
+
+    private String mApiToken;
+    private int mVehicleType;
+    private EditText mTxtNote;
+    private Button mBtnSend, mBtnCancel;
+
     public CancelTripDialog() {
 
     }
 
     public static CancelTripDialog newInstance(String apiToken, int vehType, CancelTripAPI.CancelTripInterface tripInterface) {
-        cancelTripInterface=tripInterface;
+        sCancelTripInterface = tripInterface;
         CancelTripDialog fragment = new CancelTripDialog();
         Bundle args = new Bundle();
         args.putString(API_TOKEN, apiToken);
@@ -55,8 +56,8 @@ public class CancelTripDialog extends DialogFragment implements View.OnClickList
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            apiToken = getArguments().getString(API_TOKEN);
-            vehicleType = getArguments().getInt(VEHICLE_TYPE);
+            mApiToken = getArguments().getString(API_TOKEN);
+            mVehicleType = getArguments().getInt(VEHICLE_TYPE);
         }
     }
 
@@ -82,15 +83,15 @@ public class CancelTripDialog extends DialogFragment implements View.OnClickList
     }
 
     private void addEvents() {
-        btnSend.setOnClickListener(this);
-        btnCancel.setOnClickListener(this);
+        mBtnSend.setOnClickListener(this);
+        mBtnCancel.setOnClickListener(this);
 
     }
 
     private void addControls(View view) {
-        txtNote = (EditText) view.findViewById(R.id.txtNote);
-        btnSend = (Button) view.findViewById(R.id.btnSendrequest);
-        btnCancel = (Button) view.findViewById(R.id.btnCancelSend);
+        mTxtNote = (EditText) view.findViewById(R.id.txtNote);
+        mBtnSend = (Button) view.findViewById(R.id.btnSendrequest);
+        mBtnCancel = (Button) view.findViewById(R.id.btnCancelSend);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -119,18 +120,12 @@ public class CancelTripDialog extends DialogFragment implements View.OnClickList
 
     private void cancelTrip() {
         String comment = "";
-        if (txtNote.getText().length() > 0) {
-            comment = txtNote.getText().toString();
+        if (mTxtNote.getText().length() > 0) {
+            comment = mTxtNote.getText().toString();
         }
-
-        CancelTripAPI cancelTripAPI=new CancelTripAPI(cancelTripInterface);
-       cancelTripAPI.cancel(apiToken, vehicleType, comment);
-
-
+        CancelTripAPI cancelTripAPI = new CancelTripAPI(sCancelTripInterface);
+        cancelTripAPI.cancel(mApiToken, mVehicleType, comment);
     }
-
-
-
 }
 
 

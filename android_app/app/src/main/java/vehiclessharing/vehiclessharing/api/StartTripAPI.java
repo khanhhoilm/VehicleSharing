@@ -11,31 +11,28 @@ import vehiclessharing.vehiclessharing.model.StartStripResponse;
  */
 
 public class StartTripAPI {
-    private RestManager restManager;
-    private StartTripRequestCallback requestCallback;
+    private RestManager mRestManager;
+    private StartTripRequestCallback mRequestIntefaceCallback;
 
     public StartTripAPI(StartTripRequestCallback requestCallback) {
-        this.requestCallback = requestCallback;
-        restManager=new RestManager();
+        this.mRequestIntefaceCallback = requestCallback;
+        mRestManager=new RestManager();
     }
-
-    private StartTripAPI() {
-    }
-
+    
     public void sendNotiStartTripToUserTogether(String apiToken,int partnerId,int vehiclesType) {
-        restManager.getApiService().startTheTrip(apiToken,partnerId,vehiclesType).enqueue(new Callback<StartStripResponse>() {
+        mRestManager.getApiService().startTheTrip(apiToken,partnerId,vehiclesType).enqueue(new Callback<StartStripResponse>() {
             @Override
             public void onResponse(Call<StartStripResponse> call, Response<StartStripResponse> response) {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
-                    requestCallback.startTripSuccess(response.body().getJourneyInfo());
+                    mRequestIntefaceCallback.startTripSuccess(response.body().getJourneyInfo());
                 } else {
-                    requestCallback.startTripFailure("start trip failed");
+                    mRequestIntefaceCallback.startTripFailure("start trip failed");
                 }
             }
 
             @Override
             public void onFailure(Call<StartStripResponse> call, Throwable t) {
-                requestCallback.startTripFailure("onFailure");
+                mRequestIntefaceCallback.startTripFailure("onFailure");
             }
         });
     }

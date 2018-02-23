@@ -28,13 +28,13 @@ import vehiclessharing.vehiclessharing.constant.Utils;
 import vehiclessharing.vehiclessharing.view.fragment.SigninFragment;
 
 
-import static vehiclessharing.vehiclessharing.constant.Utils.Login_Fragment;
+import static vehiclessharing.vehiclessharing.constant.Utils.LOGIN_FRAGMENT;
 
 public class SigninActivity extends AppCompatActivity implements View.OnClickListener{
-    public static ProgressDialog mProgress;
+    public static ProgressDialog sProgress;
 
-    private static FragmentManager fragmentManager;
-    private ImageView imgClose;
+    private FragmentManager mFragmentManager;
+    private ImageView mImgClose;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +46,10 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
 
         setContentView(R.layout.activity_signin);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        fragmentManager = getSupportFragmentManager();
+        mFragmentManager = getSupportFragmentManager();
 
         if (savedInstanceState == null) {
-            fragmentManager
-                    .beginTransaction()
-                    .replace(R.id.frameContainer, new SigninFragment(),
-                            Login_Fragment).commit();
+            mFragmentManager.beginTransaction().replace(R.id.frameContainer, new SigninFragment(),LOGIN_FRAGMENT).commit();
         }
 
         addControls();
@@ -60,7 +57,7 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void addEvents() {
-        imgClose.setOnClickListener(this);
+        mImgClose.setOnClickListener(this);
     }
 
     @Override
@@ -73,21 +70,21 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void addControls() {
-        mProgress =new ProgressDialog(this);
-        mProgress.setTitle(Utils.SignIn);
-        mProgress.setMessage(Utils.PleaseWait);
-        mProgress.setCancelable(false);
-        mProgress.setCanceledOnTouchOutside(false);
+        sProgress =new ProgressDialog(this);
+        sProgress.setTitle(Utils.SignIn);
+        sProgress.setMessage(Utils.PleaseWait);
+        sProgress.setCancelable(false);
+        sProgress.setCanceledOnTouchOutside(false);
         //[End] Setup for progress
 
-        imgClose = (ImageView) findViewById(R.id.close_activity);
+        mImgClose = (ImageView) findViewById(R.id.close_activity);
         //set animation Close
         Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pendulum);
-        imgClose.startAnimation(animation);
+        mImgClose.startAnimation(animation);
     }
 
     public void replaceLoginFragment() {
-        fragmentManager
+        mFragmentManager
                 .beginTransaction()
                 .setCustomAnimations(R.anim.left_enter, R.anim.right_out)
                 .replace(R.id.frameContainer, new SigninFragment()).commit();
@@ -96,9 +93,9 @@ public class SigninActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void onBackPressed() {
 
-        Fragment signUpFragment = fragmentManager
+        Fragment signUpFragment = mFragmentManager
                 .findFragmentByTag(Utils.SignUp_Fragment);
-        Fragment forgetPasswordFragment = fragmentManager
+        Fragment forgetPasswordFragment = mFragmentManager
                 .findFragmentByTag(Utils.ForgotPassword_Fragment);
 
         finishAffinity();

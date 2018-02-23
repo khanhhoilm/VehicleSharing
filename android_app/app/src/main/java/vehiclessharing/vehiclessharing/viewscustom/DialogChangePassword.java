@@ -21,12 +21,6 @@ import com.google.firebase.auth.EmailAuthProvider;
 import vehiclessharing.vehiclessharing.R;
 
 
-*/
-/**
- * Created by Tuan on 15/05/2017.
- *//*
-
-
 public class DialogChangePassword extends Dialog implements View.OnClickListener{
     public Activity c;
     public Dialog d;

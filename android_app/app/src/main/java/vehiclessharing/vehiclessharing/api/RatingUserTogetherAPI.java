@@ -6,28 +6,28 @@ import retrofit2.Response;
 import vehiclessharing.vehiclessharing.model.StatusResponse;
 
 public class RatingUserTogetherAPI {
-    private RestManager restManager;
-    private RatingCallback ratingCallback;
+    private RestManager mRestManager;
+    private RatingCallback mRatingInterfaceCallback;
 
     public RatingUserTogetherAPI(RatingCallback ratingCallback) {
-        this.ratingCallback = ratingCallback;
-        restManager=new RestManager();
+        this.mRatingInterfaceCallback = ratingCallback;
+        mRestManager=new RestManager();
     }
 
     public void rating(String apiToken, int journeyId, final float ratingValue, String comment) {
-        restManager.getApiService().ratingUserTogether(apiToken, journeyId, ratingValue, comment).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().ratingUserTogether(apiToken, journeyId, ratingValue, comment).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
-                    ratingCallback.ratingSuccess();
+                    mRatingInterfaceCallback.ratingSuccess();
                 } else {
-                    ratingCallback.ratingFailure("Response unsucessful ");
+                    mRatingInterfaceCallback.ratingFailure("Response unsucessful ");
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                ratingCallback.ratingFailure("onFailure");
+                mRatingInterfaceCallback.ratingFailure("onFailure");
             }
         });
     }

@@ -12,70 +12,51 @@ import vehiclessharing.vehiclessharing.model.StatusResponse;
  */
 
 public class UpdateImageAPI {
-    private RestUploadFile restUploadFile;
-    private RestManager restManager;
-    private UpdateImageCallback updateImageCallback;
+    private RestUploadFile mRestUploadFile;
+    private RestManager mRestManager;
+    private UpdateImageCallback mUpdateImageCallback;
 
     public UpdateImageAPI(UpdateImageCallback callback) {
-        updateImageCallback=callback;
-        restManager=new RestManager();
-        restUploadFile=new RestUploadFile();
+        mUpdateImageCallback=callback;
+        mRestManager=new RestManager();
+        mRestUploadFile=new RestUploadFile();
     }
 
     public void getURLImage(MultipartBody.Part body){
-        final Call<PathImageUpload> req = restUploadFile.getApiService().postImage(body);
+        final Call<PathImageUpload> req = mRestUploadFile.getApiService().postImage(body);
         req.enqueue(new Callback<PathImageUpload>() {
             @Override
             public void onResponse(Call<PathImageUpload> call, Response<PathImageUpload> response) {
                 if (response.code() == 200) {
-                    updateImageCallback.getURLImageSuccess(response.body().getFilePath());
-                    //Toast.makeText(EditProfileActivity.this, "Cập nhật hình ảnh thành công", Toast.LENGTH_SHORT).show();
+                    mUpdateImageCallback.getURLImageSuccess(response.body().getFilePath());
                 }else {
-                    updateImageCallback.getURLImageFailure();
+                    mUpdateImageCallback.getURLImageFailure();
                 }
-                // Do Something
             }
 
             @Override
             public void onFailure(Call<PathImageUpload> call, Throwable t) {
-                updateImageCallback.updateImageFailure();
+                mUpdateImageCallback.updateImageFailure();
             }
         });
 
     }
 
-    public void updateImage(String apiToken,String avatarLink){
-        restManager.getApiService().updateAvatar(apiToken,avatarLink).enqueue(new Callback<StatusResponse>() {
-            @Override
-            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                if(response.isSuccessful()) {
-                    updateImageCallback.updateImageSuccess();
-                }else {
-                    updateImageCallback.updateImageFailure();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<StatusResponse> call, Throwable t) {
-                updateImageCallback.updateImageFailure();
-            }
-        });
-    }
     public void updateInfoUser(String apiToken, String name, String email,String avatarLink, int gender,String address, String birthday){
-        restManager.getApiService().updateInfoUser(apiToken, name,email,avatarLink, gender, address, birthday).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().updateInfoUser(apiToken, name,email,avatarLink, gender, address, birthday).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if (response.isSuccessful() && response.body().getStatus().getError() == 0) {
-                   updateImageCallback.updateInfoUserSuccess();
+                    mUpdateImageCallback.updateInfoUserSuccess();
                 }else {
-                    updateImageCallback.updateInfoUserFailure();
+                    mUpdateImageCallback.updateInfoUserFailure();
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
 
-            updateImageCallback.updateInfoUserFailure();
+                mUpdateImageCallback.updateInfoUserFailure();
             }
         });
     }

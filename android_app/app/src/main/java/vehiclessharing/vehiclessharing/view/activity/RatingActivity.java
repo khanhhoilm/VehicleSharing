@@ -17,31 +17,33 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 
 import co.vehiclessharing.R;
-import vehiclessharing.vehiclessharing.api.UserInfoAPI;
 import vehiclessharing.vehiclessharing.api.RatingUserTogetherAPI;
+import vehiclessharing.vehiclessharing.api.UserInfoAPI;
 import vehiclessharing.vehiclessharing.database.DatabaseHelper;
 import vehiclessharing.vehiclessharing.model.InfomationUser;
 import vehiclessharing.vehiclessharing.model.RequestInfo;
-import vehiclessharing.vehiclessharing.permission.isNetworkAvailable;
+import vehiclessharing.vehiclessharing.utils.NetworkUtils;
 import vehiclessharing.vehiclessharing.utils.PlaceHelper;
 
 public class RatingActivity extends AppCompatActivity implements View.OnClickListener, View.OnFocusChangeListener,
         RatingBar.OnRatingBarChangeListener, RatingUserTogetherAPI.RatingCallback, UserInfoAPI.GetInfoUserCallback {
-    private TextView txtName, txtSource, txtDes, txtTime, txtComment;
-    private ImageView imgAvatar, imgType;
 
-    private RatingBar ratingBar;
-    private Button btnSend;
-    private int journeyId;
-    private String apiToken = "";
-    private DatabaseHelper databaseHelper;
-    private RequestInfo yourRequestInfo;
-    private ProgressBar progressBar;
-    private SharedPreferences sharedPreferencesScreen;
-    private SharedPreferences.Editor editorScreen;
-    private int isFavorite = 0;
-    private int timeRating = 0;
-    private UserInfoAPI userInfoAPI;
+    private TextView mTxtName, mTxtSource, mTxtDes, mTxtTime, mTxtComment;
+    private ImageView mAvatar, mVehicleType;
+
+    private RatingBar mRatingBar;
+    private Button mBtnSend;
+    private ProgressBar mProgressBar;
+
+    private int mJourneyId, isFavorite = 0, mNumberStar = 0;
+    private String mApiToken = "";
+
+    private DatabaseHelper mDatabaseHelper;
+    private RequestInfo mYourRequestInfo;
+    private UserInfoAPI mUserInfoAPI;
+
+    private SharedPreferences mSharedPreferencesScreen;
+    private SharedPreferences.Editor mEditorScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,72 +53,72 @@ public class RatingActivity extends AppCompatActivity implements View.OnClickLis
             getWindow().setStatusBarColor(getResources().getColor(R.color.colorPrimaryDark));
         }
 
-        apiToken = MainActivity.sessionId;
+        mApiToken = MainActivity.sSessionId;
         Bundle bundle = getIntent().getExtras();
-        journeyId = bundle.getInt("journey_id", 0);
-        sharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
-        if (journeyId == 0) {
-            journeyId = sharedPreferencesScreen.getInt(VehicleMoveActivity.JOURNEY_ID, 0);
+        mJourneyId = bundle.getInt("journey_id", 0);
+        mSharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
+        if (mJourneyId == 0) {
+            mJourneyId = mSharedPreferencesScreen.getInt(VehicleMoveActivity.JOURNEY_ID, 0);
         }
-        int screen=sharedPreferencesScreen.getInt(MainActivity.SCREEN_NAME,MainActivity.MAIN_ACTIVITY);
-        if (journeyId == 0 || screen==MainActivity.MAIN_ACTIVITY) {
+        int screen = mSharedPreferencesScreen.getInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+        if (mJourneyId == 0 || screen == MainActivity.MAIN_ACTIVITY) {
             goToMainActivity();
-        }else {
-            editorScreen = sharedPreferencesScreen.edit();
-            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
-            editorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, journeyId);
-            editorScreen.commit();
+        } else {
+            mEditorScreen = mSharedPreferencesScreen.edit();
+            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
+            mEditorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, mJourneyId);
+            mEditorScreen.commit();
         }
-        databaseHelper = new DatabaseHelper(this);
-        yourRequestInfo = databaseHelper.getRequestInfoNotMe(MainActivity.userId);
+        mDatabaseHelper = new DatabaseHelper(this);
+        mYourRequestInfo = mDatabaseHelper.getRequestInfoNotMe(MainActivity.sUserId);
 
 
-        userInfoAPI=new UserInfoAPI(this);
+        mUserInfoAPI = new UserInfoAPI(this);
         addControls();
-        if (yourRequestInfo.getSourceLocation()!=null&&yourRequestInfo.getDestLocation()!=null){
+        if (mYourRequestInfo.getSourceLocation() != null && mYourRequestInfo.getDestLocation() != null) {
             loadUI();
         }
         addEvents();
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
-        editorScreen.commit();
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
+        mEditorScreen.commit();
     }
 
     private void addEvents() {
-        btnSend.setOnClickListener(this);
-        txtComment.setOnFocusChangeListener(this);
-        ratingBar.setOnRatingBarChangeListener(this);
+        mBtnSend.setOnClickListener(this);
+        mTxtComment.setOnFocusChangeListener(this);
+        mRatingBar.setOnRatingBarChangeListener(this);
     }
 
     private void addControls() {
-        txtName = findViewById(R.id.txtFullName);
-        imgAvatar = findViewById(R.id.imgAvatar);
-        txtSource = findViewById(R.id.txtSourceLocation);
-        txtDes = findViewById(R.id.txtDesLocation);
-        txtTime = findViewById(R.id.txtTimeStartEnd);
-        imgType = findViewById(R.id.imgVehicleType);
-        ratingBar = findViewById(R.id.rbRating);
-        txtComment = findViewById(R.id.txtWriteComment);
-        btnSend = findViewById(R.id.btnSendRating);
-        progressBar = findViewById(R.id.progressBar);
+        mTxtName = findViewById(R.id.txtFullName);
+        mAvatar = findViewById(R.id.imgAvatar);
+        mTxtSource = findViewById(R.id.txtSourceLocation);
+        mTxtDes = findViewById(R.id.txtDesLocation);
+        mTxtTime = findViewById(R.id.txtTimeStartEnd);
+        mVehicleType = findViewById(R.id.imgVehicleType);
+        mRatingBar = findViewById(R.id.rbRating);
+        mTxtComment = findViewById(R.id.txtWriteComment);
+        mBtnSend = findViewById(R.id.btnSendRating);
+        mProgressBar = findViewById(R.id.progressBar);
 
     }
 
     private void loadUI() {
-        userInfoAPI.getUserInfoFromAPI(MainActivity.sessionId, yourRequestInfo.getUserId());
+        mUserInfoAPI.getUserInfoFromAPI(MainActivity.sSessionId, mYourRequestInfo.getUserId());
         try {
-            txtSource.setText(PlaceHelper.getInstance(this).getAddressByLatLngLocation(yourRequestInfo.getSourceLocation()));
-            txtDes.setText(PlaceHelper.getInstance(this).getAddressByLatLngLocation(yourRequestInfo.getDestLocation()));
-            txtTime.setText(yourRequestInfo.getTimeStart());
-            switch (yourRequestInfo.getVehicleType()) {
+            mTxtSource.setText(PlaceHelper.getInstance(this).getAddressByLatLngLocation(mYourRequestInfo.getSourceLocation()));
+            mTxtDes.setText(PlaceHelper.getInstance(this).getAddressByLatLngLocation(mYourRequestInfo.getDestLocation()));
+            mTxtTime.setText(mYourRequestInfo.getTimeStart());
+            switch (mYourRequestInfo.getVehicleType()) {
                 case 0:
-                    imgType.setImageResource(R.drawable.ic_directions_run_indigo_700_24dp);
+                    mVehicleType.setImageResource(R.drawable.ic_directions_run_indigo_700_24dp);
                     break;
                 case 1:
-                    imgType.setImageResource(R.drawable.ic_motorcycle_indigo_a700_24dp);
+                    mVehicleType.setImageResource(R.drawable.ic_motorcycle_indigo_a700_24dp);
                     break;
                 case 2:
-                    imgType.setImageResource(R.drawable.ic_directions_car_indigo_700_24dp);
+                    mVehicleType.setImageResource(R.drawable.ic_directions_car_indigo_700_24dp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -128,14 +130,14 @@ public class RatingActivity extends AppCompatActivity implements View.OnClickLis
         int id = v.getId();
         switch (id) {
             case R.id.btnSendRating:
-                if (isNetworkAvailable.isOnline(this)) {
+                if (NetworkUtils.isNetworkConnected(this)) {
 
-                    if (journeyId != 0) {
-                        btnSend.setEnabled(false);
-                        ratingBar.setEnabled(false);
-                        progressBar.setVisibility(View.VISIBLE);
-                        RatingUserTogetherAPI ratingUserTogetherAPI=new RatingUserTogetherAPI(this);
-                       ratingUserTogetherAPI.rating(apiToken, journeyId, ratingBar.getRating(), txtComment.getText().toString());
+                    if (mJourneyId != 0) {
+                        mBtnSend.setEnabled(false);
+                        mRatingBar.setEnabled(false);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                        RatingUserTogetherAPI ratingUserTogetherAPI = new RatingUserTogetherAPI(this);
+                        ratingUserTogetherAPI.rating(mApiToken, mJourneyId, mRatingBar.getRating(), mTxtComment.getText().toString());
                     } else {
                         goToMainActivity();
                     }
@@ -146,42 +148,42 @@ public class RatingActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        btnSend.setAlpha(1);
+        mBtnSend.setAlpha(1);
     }
 
     @Override
     public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-        btnSend.setAlpha(1);
+        mBtnSend.setAlpha(1);
     }
 
     @Override
     public void ratingSuccess() {
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
         Toast.makeText(this, "rating success", Toast.LENGTH_SHORT).show();
 
-        DatabaseHelper mDatabase=new DatabaseHelper(this);
+        DatabaseHelper mDatabase = new DatabaseHelper(this);
         mDatabase.deleteAllRequest();
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
 
-        editorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, 0);
-        editorScreen.commit();
+        mEditorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, 0);
+        mEditorScreen.commit();
 
-        if (ratingBar.getRating() < 4 || isFavorite == 1) {
+        if (mRatingBar.getRating() < 4 || isFavorite == 1) {
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         } else {
             Intent intent = new Intent(this, LikeUserActivity.class);
-            intent.putExtra(LikeUserActivity.PARTNER_ID, yourRequestInfo.getUserId());
+            intent.putExtra(LikeUserActivity.PARTNER_ID, mYourRequestInfo.getUserId());
             startActivity(intent);
         }
 
     }
 
     private void goToMainActivity() {
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
-        editorScreen.commit();
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+        mEditorScreen.commit();
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
@@ -191,21 +193,22 @@ public class RatingActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void ratingFailure(String message) {
-        if (timeRating > 2) {
+        if (mNumberStar > 2) {
             goToMainActivity();
         } else {
-            progressBar.setVisibility(View.GONE);
-            btnSend.setEnabled(true);
+            mProgressBar.setVisibility(View.GONE);
+            mBtnSend.setEnabled(true);
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void getInfoUserSuccess(InfomationUser infomationUser) {
-        txtName.setText(infomationUser.getUserInfo().getName());
+        mTxtName.setText(infomationUser.getUserInfo().getName());
+        mTxtSource.setText(infomationUser.getUserInfo().getName());
         if (infomationUser.getUserInfo().getAvatarLink() != null && !infomationUser.getUserInfo().getAvatarLink().equals("")) {
             Glide.with(this).load(infomationUser.getUserInfo().getAvatarLink()).placeholder(R.drawable.temp)
-                    .error(R.drawable.temp).centerCrop().into(imgAvatar);
+                    .error(R.drawable.temp).centerCrop().into(mAvatar);
         }
         isFavorite = infomationUser.getIsFavorite();
     }
@@ -213,7 +216,6 @@ public class RatingActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     public void getUserInfoFailure(String message) {
         Log.d("getUserInfo", message);
-        userInfoAPI.getUserInfoFromAPI(MainActivity.sessionId, yourRequestInfo.getUserId());
-
+        mUserInfoAPI.getUserInfoFromAPI(MainActivity.sSessionId, mYourRequestInfo.getUserId());
     }
 }

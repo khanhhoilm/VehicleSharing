@@ -1,4 +1,4 @@
-package vehiclessharing.vehiclessharing.permission;
+package vehiclessharing.vehiclessharing.utils;
 
 import android.Manifest;
 import android.content.Context;
@@ -7,9 +7,12 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v4.content.ContextCompat;
 
-public class isNetworkAvailable {
+public class NetworkUtils {
 
-    public static boolean isOnline(Context mContext) {
+    private NetworkUtils() {
+    }
+
+    public static boolean isNetworkConnected(Context mContext) {
         boolean rsCheck=false;
         ConnectivityManager cm =
                 (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);

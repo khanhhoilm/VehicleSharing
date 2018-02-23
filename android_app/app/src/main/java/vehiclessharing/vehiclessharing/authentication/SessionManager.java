@@ -12,12 +12,12 @@ import vehiclessharing.vehiclessharing.view.activity.SigninActivity;
  */
 
 public class SessionManager {
-    SharedPreferences pref;
+    private SharedPreferences mPref;
 
-    SharedPreferences.Editor editor;
-    Context _context;
+    private SharedPreferences.Editor mEditor;
+    private Context mContext;
 
-    int PRIVATE_MODE = 0;
+    private int PRIVATE_MODE = 0;
 
     public static final String PREF_NAME_LOGIN = "vsharing_is_login";
 
@@ -26,36 +26,38 @@ public class SessionManager {
     public static final String KEY_NAME = "name";
 
     public static final String KEY_SESSION = "session_id";
-    public static final String USER_ID="user_id";
+    public static final String USER_ID = "user_id";
 
 
-    public SessionManager(Context context){
-        this._context = context;
-        pref = _context.getSharedPreferences(PREF_NAME_LOGIN, PRIVATE_MODE);
-        editor = pref.edit();
-    }
-    public void createLoginSession(int userId, String session_id){
-        editor.putBoolean(IS_LOGIN, true);
-
-        editor.putInt(USER_ID, userId);
-
-        editor.putString(KEY_SESSION, session_id);
-        editor.commit();
+    public SessionManager(Context context) {
+        this.mContext = context;
+        mPref = mContext.getSharedPreferences(PREF_NAME_LOGIN, PRIVATE_MODE);
+        mEditor = mPref.edit();
     }
 
-    public void logoutUser(){
-        editor.clear();
-        editor.commit();
+    public void createLoginSession(int userId, String session_id) {
+        mEditor.putBoolean(IS_LOGIN, true);
 
-        Intent signInIntent = new Intent(_context, SigninActivity.class);
+        mEditor.putInt(USER_ID, userId);
+
+        mEditor.putString(KEY_SESSION, session_id);
+        mEditor.commit();
+    }
+
+    public void logoutUser() {
+        mEditor.clear();
+        mEditor.commit();
+
+        Intent signInIntent = new Intent(mContext, SigninActivity.class);
 
         signInIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
         signInIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        _context.startActivity(signInIntent);
+        mContext.startActivity(signInIntent);
     }
-    public boolean isLoggedIn(){
-        Log.d("isLoggedIn","Sessionid: "+pref.getString(KEY_SESSION,""));
-        return pref.getBoolean(IS_LOGIN, false);
+
+    public boolean isLoggedIn() {
+        Log.d("isLoggedIn", "Sessionid: " + mPref.getString(KEY_SESSION, ""));
+        return mPref.getBoolean(IS_LOGIN, false);
     }
 }

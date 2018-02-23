@@ -22,16 +22,15 @@ import vehiclessharing.vehiclessharing.utils.PlaceHelper;
 
 public class ReceiveConfirmRequestActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ConfirmRequest confirmRequest;
-    private CircleImageView imgAvatar;
-    private TextView txtUserName, txtSourLocation, txtEndLocation, txtTimeStart, txtVehicleType;
-    private Button btnDirect;
-    private DatabaseHelper databaseHelper;
-    private String dataReceive;
-    private RequestInfo yourRequestInfo;
-    private int journeyId;
-    private SharedPreferences sharedPreferencesScreen;
-    private SharedPreferences.Editor editorScreen;
+    private ConfirmRequest mConfirmRequest;
+    private CircleImageView mAvatar;
+    private TextView mTxtUserName, mTxtSourLocation, mTxtEndLocation, mTxtTimeStart;
+    private Button mBtnDirect;
+    private DatabaseHelper mDatabaseHelper;
+    private String mDataReceive;
+    private RequestInfo mYourRequestInfo;
+    private SharedPreferences mSharedPreferencesScreen;
+    private SharedPreferences.Editor mEditorScreen;
 
 
     @Override
@@ -39,59 +38,59 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receive_confirm_request);
         Bundle bundle = getIntent().getExtras();
-        dataReceive = bundle.getString(CustomFirebaseMessagingService.DATA_RECEIVE, "");
+        mDataReceive = bundle.getString(CustomFirebaseMessagingService.DATA_RECEIVE, "");
 
         Gson gson = new Gson();
-        confirmRequest = gson.fromJson(dataReceive, ConfirmRequest.class);
+        mConfirmRequest = gson.fromJson(mDataReceive, ConfirmRequest.class);
 
-        yourRequestInfo = new RequestInfo();
-        yourRequestInfo.setUserId(confirmRequest.getUserId());
-        yourRequestInfo.setAvatarLink(confirmRequest.getAvartarLink());
-        yourRequestInfo.setVehicleType(confirmRequest.getVehicleType());
-        yourRequestInfo.setSourceLocation(confirmRequest.getStartLocation());
-        yourRequestInfo.setDestLocation(confirmRequest.getEndLocation());
-        yourRequestInfo.setTimeStart(confirmRequest.getStartTime());
+        mYourRequestInfo = new RequestInfo();
+        mYourRequestInfo.setUserId(mConfirmRequest.getUserId());
+        mYourRequestInfo.setAvatarLink(mConfirmRequest.getAvartarLink());
+        mYourRequestInfo.setVehicleType(mConfirmRequest.getVehicleType());
+        mYourRequestInfo.setSourceLocation(mConfirmRequest.getStartLocation());
+        mYourRequestInfo.setDestLocation(mConfirmRequest.getEndLocation());
+        mYourRequestInfo.setTimeStart(mConfirmRequest.getStartTime());
 
         addControls();
         addEvents();
         loadContent();
 
-        sharedPreferencesScreen=getSharedPreferences(MainActivity.SCREEN_AFTER_BACK,MODE_PRIVATE);
-        editorScreen=sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME,MainActivity.WAIT_START_TRIP);
-        editorScreen.commit();
+        mSharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.WAIT_START_TRIP);
+        mEditorScreen.commit();
     }
 
     private void loadContent() {
-        txtUserName.setText(confirmRequest.getUserName());
+        mTxtUserName.setText(mConfirmRequest.getUserName());
         try {
-            String sourceLocation = PlaceHelper.getInstance(this).getAddressByLatLngLocation(confirmRequest.getStartLocation());
-            txtSourLocation.setText(sourceLocation);
-            String desLocation = PlaceHelper.getInstance(this).getAddressByLatLngLocation(confirmRequest.getEndLocation());
-            txtEndLocation.setText(desLocation);
-            txtTimeStart.setText(confirmRequest.getStartTime());
-            if (confirmRequest.getAvartarLink()!=null&&!confirmRequest.getAvartarLink().equals("")){
-                Glide.with(this).load(confirmRequest.getAvartarLink()).placeholder(getResources().getDrawable(R.drawable.temp)).into(imgAvatar);
+            String sourceLocation = PlaceHelper.getInstance(this).getAddressByLatLngLocation(mConfirmRequest.getStartLocation());
+            mTxtSourLocation.setText(sourceLocation);
+            String desLocation = PlaceHelper.getInstance(this).getAddressByLatLngLocation(mConfirmRequest.getEndLocation());
+            mTxtEndLocation.setText(desLocation);
+            mTxtTimeStart.setText(mConfirmRequest.getStartTime());
+            if (mConfirmRequest.getAvartarLink() != null && !mConfirmRequest.getAvartarLink().equals("")) {
+                Glide.with(this).load(mConfirmRequest.getAvartarLink()).placeholder(getResources()
+                        .getDrawable(R.drawable.temp)).into(mAvatar);
             }
-      } catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void addEvents() {
-        btnDirect.setOnClickListener(this);
+        mBtnDirect.setOnClickListener(this);
     }
 
     private void addControls() {
-        txtUserName = findViewById(R.id.txtUserName);
-        imgAvatar=findViewById(R.id.imgAvatar);
-        txtTimeStart = findViewById(R.id.txtTimeStart);
-        txtSourLocation = findViewById(R.id.txtSource);
-        txtEndLocation = findViewById(R.id.txtDestination);
-        txtVehicleType = findViewById(R.id.txtVehicleType);
-        btnDirect = findViewById(R.id.btnDirect);
-        databaseHelper = new DatabaseHelper(this);
-        if (databaseHelper.insertRequestNotMe(yourRequestInfo, confirmRequest.getUserId())) {
+        mTxtUserName = findViewById(R.id.txtUserName);
+        mAvatar = findViewById(R.id.imgAvatar);
+        mTxtTimeStart = findViewById(R.id.txtTimeStart);
+        mTxtSourLocation = findViewById(R.id.txtSource);
+        mTxtEndLocation = findViewById(R.id.txtDestination);
+        mBtnDirect = findViewById(R.id.btnDirect);
+        mDatabaseHelper = new DatabaseHelper(this);
+        if (mDatabaseHelper.insertRequestNotMe(mYourRequestInfo, mConfirmRequest.getUserId())) {
             Log.d("insertDatabase", "success");
         }
     }
@@ -100,7 +99,7 @@ public class ReceiveConfirmRequestActivity extends AppCompatActivity implements 
     public void onClick(View v) {
         if (v.getId() == R.id.btnDirect) {
             Intent intent = new Intent(ReceiveConfirmRequestActivity.this, VehicleMoveActivity.class);
-            intent.putExtra(CustomFirebaseMessagingService.DATA_RECEIVE, dataReceive);
+            intent.putExtra(CustomFirebaseMessagingService.DATA_RECEIVE, mDataReceive);
             intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY, VehicleMoveActivity.RECEIVE_CONFIRM_REQUEST);
             startActivity(intent);
         }

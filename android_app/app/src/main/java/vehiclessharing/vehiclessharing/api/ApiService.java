@@ -1,8 +1,6 @@
 package vehiclessharing.vehiclessharing.api;
 
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
@@ -14,7 +12,7 @@ import vehiclessharing.vehiclessharing.model.History;
 import vehiclessharing.vehiclessharing.model.PathImageUpload;
 import vehiclessharing.vehiclessharing.model.RequestResult;
 import vehiclessharing.vehiclessharing.model.ResultSendRequest;
-import vehiclessharing.vehiclessharing.model.SignInResult;
+import vehiclessharing.vehiclessharing.model.SignInResponse;
 import vehiclessharing.vehiclessharing.model.StartStripResponse;
 import vehiclessharing.vehiclessharing.model.StatusResponse;
 import vehiclessharing.vehiclessharing.model.UserInfo;
@@ -35,8 +33,8 @@ public interface ApiService {
 
     @POST("users/signin")
     @FormUrlEncoded
-    Call<SignInResult> signIn(@Field("phone") String phone,
-                              @Field("password") String password);
+    Call<SignInResponse> signIn(@Field("phone") String phone,
+                                @Field("password") String password);
 
     @POST("users/signout")
     @FormUrlEncoded

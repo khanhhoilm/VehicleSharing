@@ -43,20 +43,20 @@ import vehiclessharing.vehiclessharing.permission.CheckerGPS;
  */
 
 public class PlaceHelper {
-    private static PlaceHelper instance;
-    private static Geocoder geocoder;
-    private static List<Address> addresses;
+    private static PlaceHelper sInstance;
+    private Geocoder mGeocoder;
+    private List<Address> mAddresses;
     private Context mContext;
     private Activity mActivity;
 
     public static PlaceHelper getInstance(Context context) {
 
-        return instance = new PlaceHelper(context);
+        return sInstance = new PlaceHelper(context);
     }
 
     public static PlaceHelper getInstance(Context context, Activity activity) {
 
-        return instance = new PlaceHelper(context, activity);
+        return sInstance = new PlaceHelper(context, activity);
     }
 
     PlaceHelper(Context context) {
@@ -91,17 +91,17 @@ public class PlaceHelper {
                     }
                 }
             }
-            geocoder = new Geocoder(mContext, Locale.getDefault());
+            mGeocoder = new Geocoder(mContext, Locale.getDefault());
             if (myLocation != null) {
                 double dLatitude = myLocation.getLatitude();
                 double dLongitude = myLocation.getLongitude();
                 try {
-                    addresses = geocoder.getFromLocation(dLatitude, dLongitude, 1);
+                    mAddresses = mGeocoder.getFromLocation(dLatitude, dLongitude, 1);
                     String listAddress[] = new String[4];
-                    listAddress[0] = addresses.get(0).getAddressLine(0);
-                    listAddress[1] = addresses.get(0).getLocality();
-                    listAddress[2] = addresses.get(0).getAdminArea();
-                    listAddress[3] = addresses.get(0).getCountryName();
+                    listAddress[0] = mAddresses.get(0).getAddressLine(0);
+                    listAddress[1] = mAddresses.get(0).getLocality();
+                    listAddress[2] = mAddresses.get(0).getAdminArea();
+                    listAddress[3] = mAddresses.get(0).getCountryName();
 
                     for (int i = 0; i < listAddress.length; i++) {
                         if (listAddress[i] != null) {
@@ -127,27 +127,27 @@ public class PlaceHelper {
     }
 
     public LatLng getLatLngByName(String location) {
-        geocoder = new Geocoder(mContext);
+        mGeocoder = new Geocoder(mContext);
         try {
-            addresses = geocoder.getFromLocationName(location, 1);
+            mAddresses = mGeocoder.getFromLocationName(location, 1);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        LatLng latLng = new LatLng(addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
+        LatLng latLng = new LatLng(mAddresses.get(0).getLatitude(), mAddresses.get(0).getLongitude());
         return latLng;
     }
 
     public String getAddressByLatLng(final LatLng latLng) throws IOException {
         String fullAddress = "";
         final String[] addressReplace = new String[1];
-        geocoder = new Geocoder(mContext);
+        mGeocoder = new Geocoder(mContext);
         try {
-            addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+            mAddresses = mGeocoder.getFromLocation(latLng.latitude, latLng.longitude, 1);
             String[] listAddress = new String[4];
-            listAddress[0] = addresses.get(0).getAddressLine(0);
-            listAddress[1] = addresses.get(0).getLocality();
-            listAddress[2] = addresses.get(0).getAdminArea();
-            listAddress[3] = addresses.get(0).getCountryName();
+            listAddress[0] = mAddresses.get(0).getAddressLine(0);
+            listAddress[1] = mAddresses.get(0).getLocality();
+            listAddress[2] = mAddresses.get(0).getAdminArea();
+            listAddress[3] = mAddresses.get(0).getCountryName();
 
             String fullAd = listAddress[0] + ", " + listAddress[1] + ", " + listAddress[2] + ", " + listAddress[3];
             Log.e("fullAddress", fullAd);
@@ -182,14 +182,14 @@ public class PlaceHelper {
     }
     public String getAddressByLatLngLocation(LatLngLocation latLng) throws Exception {
         String fullAddress = "";
-        geocoder = new Geocoder(mContext);
+        mGeocoder = new Geocoder(mContext);
         try {
-            addresses = geocoder.getFromLocation(Double.parseDouble(latLng.getLat()), Double.parseDouble(latLng.getLng()), 1);
+            mAddresses = mGeocoder.getFromLocation(Double.parseDouble(latLng.getLat()), Double.parseDouble(latLng.getLng()), 1);
             String[] listAddress = new String[4];
-            listAddress[0] = addresses.get(0).getAddressLine(0);
-            listAddress[1] = addresses.get(0).getLocality();
-            listAddress[2] = addresses.get(0).getAdminArea();
-            listAddress[3] = addresses.get(0).getCountryName();
+            listAddress[0] = mAddresses.get(0).getAddressLine(0);
+            listAddress[1] = mAddresses.get(0).getLocality();
+            listAddress[2] = mAddresses.get(0).getAdminArea();
+            listAddress[3] = mAddresses.get(0).getCountryName();
 
             String fullAd = listAddress[0] + ", " + listAddress[1] + ", " + listAddress[2] + ", " + listAddress[3];
             Log.e("fullAddress", fullAd);
@@ -309,8 +309,8 @@ public class PlaceHelper {
 
             // best effort zoom
             try {
-                if (geocoder != null) {
-                    List<Address> addresses = geocoder.getFromLocationName(
+                if (mGeocoder != null) {
+                    List<Address> addresses = mGeocoder.getFromLocationName(
                             lookupString, 1);
                     if (addresses != null && !addresses.isEmpty()) {
                         Address first_address = addresses.get(0);

@@ -51,7 +51,7 @@ import vehiclessharing.vehiclessharing.model.InfomationUser;
 import vehiclessharing.vehiclessharing.model.JourneyInfo;
 import vehiclessharing.vehiclessharing.model.RequestInfo;
 import vehiclessharing.vehiclessharing.permission.CallPermission;
-import vehiclessharing.vehiclessharing.permission.isNetworkAvailable;
+import vehiclessharing.vehiclessharing.utils.NetworkUtils;
 import vehiclessharing.vehiclessharing.permission.CheckerGPS;
 import vehiclessharing.vehiclessharing.push.CustomFirebaseMessagingService;
 import vehiclessharing.vehiclessharing.service.AlarmReceiver;
@@ -66,6 +66,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         CancelTripAPI.CancelTripInterface, SendSOSToAPI.SendSOSCallback {
 
     public static String CALL_FROM_WHAT_ACTIVITY = "call_from_what_activity";
+    final private static int REQ_PERMISSION = 20;//Value request permission
 
     public static String START_TRIP = "start_the_trip";
     public static String ALARM_START = "alarm_start";
@@ -73,33 +74,29 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     public static String RECEIVE_CONFIRM_REQUEST = "receive_confirm_request";
     public static String JOURNEY_ID = "journey_id";
 
+    public static AlarmManager sAlarmManager;
+    public static PendingIntent sPendingIntent;
+
     private GoogleMap mGoogleMap;
-    private DatabaseHelper databaseHelper;
-    private SharedPreferences sharedPreferences;
-    private RequestInfo myRequestInfo, yourRequestInfo;
-    private int myUserId;
-    private HashMap<String, Marker> listMarker;
-    private Location lastLocation = null;
-    private Marker mySourceMarker, hereMarker;
-    private Location desLocation;
-    private LocationManager locationManager;
-    private android.location.LocationListener locationListener;
-    private ConfirmRequest confirmRequest;
-    private FloatingActionButton btnStartTrip, btnCancelTrip;
-    public static FloatingActionButton btnEndTrip;
-    private String apiToken = "", phone = "";
-    private int journeyId = 0;
-    final private static int REQ_PERMISSION = 20;//Value request permission
-    private CheckerGPS checkerGPS;
-    private String callFrom = "";
+    private DatabaseHelper mDatabaseHelper;
+    private SharedPreferences mSharedPreferences;
+    private RequestInfo mMyRequestInfo, mYourRequestInfo;
+    private HashMap<String, Marker> mListMarker;
+    private Marker mMySourceMarker, mHereMarker;
+    private Location mDesLocation;
+    private LocationManager mLocationManager;
+    private android.location.LocationListener mLocationListener;
+    private ConfirmRequest mConfirmRequest;
+    private FloatingActionButton mBtnStartTrip, mBtnCancelTrip, mBtnEndTrip;
+    private Button mBtnSOS;
 
-    public static AlarmManager alarmManager;
-    public static PendingIntent pendingIntent;
-    private SharedPreferences sharedPreferencesScreen;
-    private SharedPreferences.Editor editorScreen;
-    private Button btnSOS;
-    private String myAddress = "";
+    private String mApiToken = "", mPhone = "", mMyAddress = "",mCallFrom = "";
+    private int mJourneyId = 0,mMyUserId;
 
+    private CheckerGPS mCheckerGPS;
+
+    private SharedPreferences mSharedPreferencesScreen;
+    private SharedPreferences.Editor mEditorScreen;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,46 +106,46 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         Bundle bundle = getIntent().getExtras();
 
         String dataReceive = bundle.getString(CustomFirebaseMessagingService.DATA_RECEIVE, "");
-        callFrom = bundle.getString(CALL_FROM_WHAT_ACTIVITY, "");
-        journeyId = bundle.getInt("journey_id", 0);
-        Log.d("journeyId", String.valueOf(journeyId));
+        mCallFrom = bundle.getString(CALL_FROM_WHAT_ACTIVITY, "");
+        mJourneyId = bundle.getInt("journey_id", 0);
+        Log.d("journeyId", String.valueOf(mJourneyId));
 
         if (!dataReceive.equals("")) {
             Gson gson = new Gson();
-            confirmRequest = gson.fromJson(dataReceive, ConfirmRequest.class);
+            mConfirmRequest = gson.fromJson(dataReceive, ConfirmRequest.class);
         }
 
         SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(this);
 
-        sharedPreferences = getSharedPreferences(SessionManager.PREF_NAME_LOGIN, MODE_PRIVATE);
-        myUserId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
-        apiToken = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
-        databaseHelper = new DatabaseHelper(this);
+        mSharedPreferences = getSharedPreferences(SessionManager.PREF_NAME_LOGIN, MODE_PRIVATE);
+        mMyUserId = mSharedPreferences.getInt(SessionManager.USER_ID, 0);
+        mApiToken = mSharedPreferences.getString(SessionManager.KEY_SESSION, "");
+        mDatabaseHelper = new DatabaseHelper(this);
 
 
-        myRequestInfo = databaseHelper.getRequestInfo(myUserId);
-        yourRequestInfo = databaseHelper.getRequestInfoNotMe(myUserId);
+        mMyRequestInfo = mDatabaseHelper.getRequestInfo(mMyUserId);
+        mYourRequestInfo = mDatabaseHelper.getRequestInfoNotMe(mMyUserId);
 
-        sharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
+        mSharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
 
-        listMarker = new HashMap<>();
-        if (confirmRequest != null && callFrom.equals("receive_confirm_request")) {
+        mListMarker = new HashMap<>();
+        if (mConfirmRequest != null && mCallFrom.equals("receive_confirm_request")) {
         }
         UserInfoAPI userInfoAPI=new UserInfoAPI(this);
-               userInfoAPI.getUserInfoFromAPI(apiToken, yourRequestInfo.getUserId());
+               userInfoAPI.getUserInfoFromAPI(mApiToken, mYourRequestInfo.getUserId());
 
-        checkerGPS = new CheckerGPS(this, this);
+        mCheckerGPS = new CheckerGPS(this, this);
 
         addControls();
         addEvents();
-        if (!callFrom.equals(ALARM_START) && !callFrom.equals(START_TRIP)) {
+        if (!mCallFrom.equals(ALARM_START) && !mCallFrom.equals(START_TRIP)) {
             addAlarm();
         }
-        if (journeyId == 0) {
-            journeyId = sharedPreferencesScreen.getInt(JOURNEY_ID, 0);
+        if (mJourneyId == 0) {
+            mJourneyId = mSharedPreferencesScreen.getInt(JOURNEY_ID, 0);
         }
-        Log.d("journeyId", String.valueOf(journeyId));
+        Log.d("journeyId", String.valueOf(mJourneyId));
     }
 
     private void addAlarm() {
@@ -156,12 +153,12 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
             int hour;
             int minute;
             String[] time;
-            if (myRequestInfo.getVehicleType() != 0) {
-                time = myRequestInfo.getTimeStart().split(":");
+            if (mMyRequestInfo.getVehicleType() != 0) {
+                time = mMyRequestInfo.getTimeStart().split(":");
                 hour = Integer.parseInt(time[0]);
                 minute = Integer.parseInt(time[1]);
             } else {
-                time = yourRequestInfo.getTimeStart().split(":");
+                time = mYourRequestInfo.getTimeStart().split(":");
                 hour = Integer.parseInt(time[0]);
                 minute = Integer.parseInt(time[1]);
             }
@@ -170,13 +167,13 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
             calendar.set(Calendar.HOUR_OF_DAY, hour);
             calendar.set(Calendar.MINUTE, minute);
             Intent myIntent = new Intent(this, AlarmReceiver.class);
-            pendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, 0);
-            alarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), pendingIntent);
+            sPendingIntent = PendingIntent.getBroadcast(this, 0, myIntent, 0);
+            sAlarmManager.set(AlarmManager.RTC, calendar.getTimeInMillis(), sPendingIntent);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    alarmManager.cancel(pendingIntent);
+                    sAlarmManager.cancel(sPendingIntent);
                 }
             }, 3000);
         } catch (Exception e) {
@@ -185,46 +182,46 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void addEvents() {
-        btnStartTrip.setOnClickListener(this);
-        btnCancelTrip.setOnClickListener(this);
-        btnEndTrip.setOnClickListener(this);
-        btnSOS.setOnClickListener(this);
+        mBtnStartTrip.setOnClickListener(this);
+        mBtnCancelTrip.setOnClickListener(this);
+        mBtnEndTrip.setOnClickListener(this);
+        mBtnSOS.setOnClickListener(this);
     }
 
     private void addControls() {
-        btnStartTrip = findViewById(R.id.btnStartStrip);
-        btnCancelTrip = findViewById(R.id.btnCancelStrip);
-        btnEndTrip = findViewById(R.id.btnEndTrip);
-        btnSOS = findViewById(R.id.btnSOS);
+        mBtnStartTrip = findViewById(R.id.btnStartStrip);
+        mBtnCancelTrip = findViewById(R.id.btnCancelStrip);
+        mBtnEndTrip = findViewById(R.id.btnEndTrip);
+        mBtnSOS = findViewById(R.id.btnSOS);
 
-        if (callFrom.equals(CONFIRM_REQUEST)) {
-            if (VehicleMoveActivity.alarmManager != null && VehicleMoveActivity.pendingIntent != null) {
-                VehicleMoveActivity.alarmManager.cancel(VehicleMoveActivity.pendingIntent);
+        if (mCallFrom.equals(CONFIRM_REQUEST)) {
+            if (VehicleMoveActivity.sAlarmManager != null && VehicleMoveActivity.sPendingIntent != null) {
+                VehicleMoveActivity.sAlarmManager.cancel(VehicleMoveActivity.sPendingIntent);
             }
             showStartFloatingButton(true);
 
-            editorScreen = sharedPreferencesScreen.edit();
-            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.WAIT_START_TRIP);
-            editorScreen.commit();
+            mEditorScreen = mSharedPreferencesScreen.edit();
+            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.WAIT_START_TRIP);
+            mEditorScreen.commit();
 
-        } else if (callFrom.equals(RECEIVE_CONFIRM_REQUEST)) {
+        } else if (mCallFrom.equals(RECEIVE_CONFIRM_REQUEST)) {
             showStartFloatingButton(true);
 
-            editorScreen = sharedPreferencesScreen.edit();
-            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.WAIT_START_TRIP);
-            editorScreen.commit();
-        } else if (callFrom.equals(START_TRIP)) {
+            mEditorScreen = mSharedPreferencesScreen.edit();
+            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.WAIT_START_TRIP);
+            mEditorScreen.commit();
+        } else if (mCallFrom.equals(START_TRIP)) {
 
-            editorScreen = sharedPreferencesScreen.edit();
-            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
-            editorScreen.commit();
+            mEditorScreen = mSharedPreferencesScreen.edit();
+            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
+            mEditorScreen.commit();
             showStartFloatingButton(false);
-            btnCancelTrip.setVisibility(View.GONE);
+            mBtnCancelTrip.setVisibility(View.GONE);
 
         } else {
-            int screenName = sharedPreferencesScreen.getInt(MainActivity.SCREEN_NAME, 0);
+            int screenName = mSharedPreferencesScreen.getInt(MainActivity.SCREEN_NAME, 0);
             if (screenName == MainActivity.WAIT_START_TRIP) {
-                alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                sAlarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
                 showStartFloatingButton(true);
             } else if (screenName == MainActivity.STARTED_TRIP) {
                 showStartFloatingButton(false);
@@ -241,15 +238,15 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     private void showStartFloatingButton(boolean show) {
         if (show) {
-            btnStartTrip.setVisibility(View.VISIBLE);
-            btnCancelTrip.setVisibility(View.VISIBLE);
-            btnSOS.setVisibility(View.GONE);
-            btnEndTrip.setVisibility(View.GONE);
+            mBtnStartTrip.setVisibility(View.VISIBLE);
+            mBtnCancelTrip.setVisibility(View.VISIBLE);
+            mBtnSOS.setVisibility(View.GONE);
+            mBtnEndTrip.setVisibility(View.GONE);
         } else {
-            btnStartTrip.setVisibility(View.GONE);
-            btnCancelTrip.setVisibility(View.GONE);
-            btnSOS.setVisibility(View.VISIBLE);
-            btnEndTrip.setVisibility(View.VISIBLE);
+            mBtnStartTrip.setVisibility(View.GONE);
+            mBtnCancelTrip.setVisibility(View.GONE);
+            mBtnSOS.setVisibility(View.VISIBLE);
+            mBtnEndTrip.setVisibility(View.VISIBLE);
         }
     }
 
@@ -263,12 +260,12 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.call) {
-            if (!phone.equals("")) {
+            if (!mPhone.equals("")) {
                 if (CallPermission.checkCall(this, this)) {
 
                 }
                 Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                callIntent.setData(Uri.parse("tel:" + phone));
+                callIntent.setData(Uri.parse("tel:" + mPhone));
 
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(
@@ -289,7 +286,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap googleMap) {
         mGoogleMap = googleMap;
         //add source and des marker for me
-        if (myRequestInfo != null && myRequestInfo.getSourceLocation() != null && myRequestInfo.getDestLocation() != null) {
+        if (mMyRequestInfo != null && mMyRequestInfo.getSourceLocation() != null && mMyRequestInfo.getDestLocation() != null) {
             setMarkerForUser();
         }
         setLocation();
@@ -303,15 +300,15 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     setLocation();
                 } else {
-                    checkerGPS.checkLocationPermission();
+                    mCheckerGPS.checkLocationPermission();
                 }
                 return;
             }
             case CallPermission.REQUEST_CALL_PHONE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if (phone.equals("")) {
+                    if (mPhone.equals("")) {
                         Intent callIntent = new Intent(Intent.ACTION_CALL);
-                        callIntent.setData(Uri.parse("tel:" + phone));
+                        callIntent.setData(Uri.parse("tel:" + mPhone));
 
                         startActivity(callIntent);
                     }
@@ -324,15 +321,15 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     public void setLocation() {
 
-        checkerGPS.checkLocationPermission();
+        mCheckerGPS.checkLocationPermission();
 
         mGoogleMap.setMyLocationEnabled(true);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        locationListener = new android.location.LocationListener() {
+        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        mLocationListener = new android.location.LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
                 Log.d("onLocationChanged", "onLocationChanged Location listener");
-                if (mySourceMarker != null) {
+                if (mMySourceMarker != null) {
                     updateMarker(location, false);
                 }
             }
@@ -352,9 +349,9 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
             }
         };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2, 1, locationListener);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 2, 1, mLocationListener);
 
-        Location myLocation = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+        Location myLocation = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
         getMyLocation(myLocation);
         final boolean[] firstTime = {true};
 
@@ -362,7 +359,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
             @Override
             public void onMyLocationChange(Location location) {
                 Log.d("onMyLocationChange", "onMyLocationChange");
-                if (mySourceMarker != null) {
+                if (mMySourceMarker != null) {
                     updateMarker(location, firstTime[0]);
                     firstTime[0] = false;
                 }
@@ -372,7 +369,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     private void getMyLocation(Location location) {
         LatLng myLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        hereMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn đang ở đây").position(myLatLng));
+        mHereMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn đang ở đây").position(myLatLng));
         CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLatLng, 20);
         mGoogleMap.animateCamera(cameraUpdate);
     }
@@ -381,7 +378,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
         Log.d("onMyLocationChange", "onMyLocationChange update");
 
         LatLng newLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-        hereMarker.setPosition(newLatLng);
+        mHereMarker.setPosition(newLatLng);
         if (!firstTime) {
             mGoogleMap.animateCamera(CameraUpdateFactory.newLatLng(newLatLng));
         } else {
@@ -390,27 +387,27 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     }
 
     public void setMarkerForUser() {
-        if (myRequestInfo != null && yourRequestInfo != null) {
-            LatLng mySouceLatLng = Helper.convertLatLngLocationToLatLng(myRequestInfo.getSourceLocation());
-            LatLng myDestLatLng = Helper.convertLatLngLocationToLatLng(myRequestInfo.getDestLocation());
+        if (mMyRequestInfo != null && mYourRequestInfo != null) {
+            LatLng mySouceLatLng = Helper.convertLatLngLocationToLatLng(mMyRequestInfo.getSourceLocation());
+            LatLng myDestLatLng = Helper.convertLatLngLocationToLatLng(mMyRequestInfo.getDestLocation());
 
-            desLocation = new Location("DesLocation");
-            desLocation.setLatitude(myDestLatLng.latitude);
-            desLocation.setLongitude(myDestLatLng.longitude);
+            mDesLocation = new Location("DesLocation");
+            mDesLocation.setLatitude(myDestLatLng.latitude);
+            mDesLocation.setLongitude(myDestLatLng.longitude);
 
-            mySourceMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn bắt đầu").position(mySouceLatLng)
+            mMySourceMarker = mGoogleMap.addMarker(new MarkerOptions().title("Bạn bắt đầu").position(mySouceLatLng)
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_person_pin_circle_red_700_36dp)));
-            listMarker.put("Source " + String.valueOf(myUserId), mySourceMarker);
+            mListMarker.put("Source " + String.valueOf(mMyUserId), mMySourceMarker);
             Marker myDesMarker = mGoogleMap.addMarker(new MarkerOptions().position(myDestLatLng).title("Bạn kết thúc ở đây")
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_drop_red_700_36dp)));
-            listMarker.put("Des " + String.valueOf(myUserId), myDesMarker);
+            mListMarker.put("Des " + String.valueOf(mMyUserId), myDesMarker);
 
             //add source and des marker for another user
-            LatLng yourSourceLatLng = Helper.convertLatLngLocationToLatLng(yourRequestInfo.getSourceLocation());
-            LatLng yourDesLatLng = Helper.convertLatLngLocationToLatLng(yourRequestInfo.getDestLocation());
+            LatLng yourSourceLatLng = Helper.convertLatLngLocationToLatLng(mYourRequestInfo.getSourceLocation());
+            LatLng yourDesLatLng = Helper.convertLatLngLocationToLatLng(mYourRequestInfo.getDestLocation());
 
             String markerStart = "", markerEnd = "";
-            if (yourRequestInfo.getVehicleType() == 0) {
+            if (mYourRequestInfo.getVehicleType() == 0) {
                 markerStart = "Bạn đến đây chở";
             } else {
                 markerStart = "Người chở bắt đầu ở đây";
@@ -422,11 +419,11 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
             Marker yourDesMarker = mGoogleMap.addMarker(new MarkerOptions().position(yourDesLatLng).title("Đến nơi").icon(
                     BitmapDescriptorFactory.fromResource(R.drawable.ic_pin_drop_indigo_500_24dp)
             ));
-            listMarker.put("Source " + yourRequestInfo.getUserId(), yourSourceMarker);
-            listMarker.put("Des " + yourRequestInfo.getUserId(), yourDesMarker);
+            mListMarker.put("Source " + mYourRequestInfo.getUserId(), yourSourceMarker);
+            mListMarker.put("Des " + mYourRequestInfo.getUserId(), yourDesMarker);
 
             DrawRoute drawRoute = new DrawRoute(this, mGoogleMap);
-            if (myRequestInfo.getVehicleType() != 0) {
+            if (mMyRequestInfo.getVehicleType() != 0) {
                 drawRoute.drawroadBetween4Location(mySouceLatLng, yourSourceLatLng, yourDesLatLng, myDestLatLng, 1);
             } else {
                 drawRoute.drawroadBetween4Location(yourSourceLatLng, mySouceLatLng, myDestLatLng, yourDesLatLng, 1);
@@ -439,8 +436,8 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     @Override
     protected void onPause() {
         super.onPause();
-        if (locationManager != null && locationListener != null) {
-            locationManager.removeUpdates(locationListener);
+        if (mLocationManager != null && mLocationListener != null) {
+            mLocationManager.removeUpdates(mLocationListener);
         }
     }
 
@@ -448,7 +445,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnStartStrip:
-                btnCancelTrip.setVisibility(View.GONE);
+                mBtnCancelTrip.setVisibility(View.GONE);
                 startTrip();
                 break;
             case R.id.btnEndTrip: {
@@ -484,39 +481,39 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     private void sendSOSToServer() {
         try {
-            myAddress = PlaceHelper.getInstance(this).getCurrentPlace(mGoogleMap);
+            mMyAddress = PlaceHelper.getInstance(this).getCurrentPlace(mGoogleMap);
         } catch (Exception e) {
             Log.d("sendSOSToServer","Error get current location");
         }
         SendSOSToAPI sosToAPI=new SendSOSToAPI(this);
-        sosToAPI.sendSOS(apiToken, myAddress, myRequestInfo.getVehicleType());
+        sosToAPI.sendSOS(mApiToken, mMyAddress, mMyRequestInfo.getVehicleType());
 
     }
 
     private void cancelTrip() {
 
         android.support.v4.app.DialogFragment dialogFragment;
-        dialogFragment = CancelTripDialog.newInstance(MainActivity.sessionId, myRequestInfo.getVehicleType(), this);
+        dialogFragment = CancelTripDialog.newInstance(MainActivity.sSessionId, mMyRequestInfo.getVehicleType(), this);
         dialogFragment.show(getSupportFragmentManager(), "CancelTrip");
 
     }
 
     public void startTrip() {
         StartTripAPI startTripAPI=new StartTripAPI(this);
-        startTripAPI.sendNotiStartTripToUserTogether(apiToken, yourRequestInfo.getUserId(), myRequestInfo.getVehicleType());
+        startTripAPI.sendNotiStartTripToUserTogether(mApiToken, mYourRequestInfo.getUserId(), mMyRequestInfo.getVehicleType());
     }
 
     public void endTrip() {
-        if (isNetworkAvailable.isOnline(this)) {
+        if (NetworkUtils.isNetworkConnected(this)) {
 
-            Log.d("journeyId", "endTrip" + String.valueOf(journeyId));
-            if (journeyId != 0) {
+            Log.d("journeyId", "endTrip" + String.valueOf(mJourneyId));
+            if (mJourneyId != 0) {
                 EndTheTripAPI endTheTripAPI=new EndTheTripAPI(this);
-                endTheTripAPI.endTheTripWithUserTogether(apiToken, journeyId);
+                endTheTripAPI.endTheTripWithUserTogether(mApiToken, mJourneyId);
 
-                editorScreen = sharedPreferencesScreen.edit();
-                editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
-                editorScreen.commit();
+                mEditorScreen = mSharedPreferencesScreen.edit();
+                mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.RATING);
+                mEditorScreen.commit();
             } else {
                 Toast.makeText(this, "Có lỗi xảy ra, không thể kết thúc chuyến đi", Toast.LENGTH_SHORT).show();
                 moveToMainActiity();
@@ -528,41 +525,41 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     public void startTripSuccess(JourneyInfo journeyInfo) {
         Toast.makeText(this, "Gửi thành công, bắt đầu di chuyển thôi", Toast.LENGTH_SHORT).show();
 
-        btnStartTrip.setVisibility(View.GONE);
-        journeyId = journeyInfo.getDetail().getJourneyId();
+        mBtnStartTrip.setVisibility(View.GONE);
+        mJourneyId = journeyInfo.getDetail().getJourneyId();
 
-        Log.d("journeyId", "start Trip success" + String.valueOf(journeyId));
-        btnEndTrip.setVisibility(View.VISIBLE);
-        btnSOS.setVisibility(View.VISIBLE);
+        Log.d("journeyId", "start Trip success" + String.valueOf(mJourneyId));
+        mBtnEndTrip.setVisibility(View.VISIBLE);
+        mBtnSOS.setVisibility(View.VISIBLE);
 
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
-        editorScreen.putInt(JOURNEY_ID, journeyId);
-        editorScreen.commit();
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
+        mEditorScreen.putInt(JOURNEY_ID, mJourneyId);
+        mEditorScreen.commit();
     }
 
     @Override
     public void startTripFailure(String message) {
         Log.d("startTrip", message);
 
-        Log.d("journeyId", "startTripFailureS" + String.valueOf(journeyId));
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
-        if (journeyId != 0) {
-            editorScreen.putInt(JOURNEY_ID, journeyId);
+        Log.d("journeyId", "startTripFailureS" + String.valueOf(mJourneyId));
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
+        if (mJourneyId != 0) {
+            mEditorScreen.putInt(JOURNEY_ID, mJourneyId);
         }
-        editorScreen.commit();
+        mEditorScreen.commit();
         showStartFloatingButton(false);
     }
 
     @Override
     public void getInfoUserSuccess(InfomationUser infomationUser) {
-        phone = infomationUser.getUserInfo().getPhone();
+        mPhone = infomationUser.getUserInfo().getPhone();
         SharedPreferences sharedPreferencesPhone = getSharedPreferences("phone_partner", MODE_PRIVATE);
         SharedPreferences.Editor editorPhone = sharedPreferencesPhone.edit();
-        editorPhone.putString("phone_number", phone);
+        editorPhone.putString("phone_number", mPhone);
         editorPhone.commit();
-        Log.d("phone number: ", phone);
+        Log.d("phone number: ", mPhone);
     }
 
     @Override
@@ -577,7 +574,7 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     private void moveToRatingScreen() {
         Intent intent = new Intent(this, RatingActivity.class);
-        intent.putExtra("journey_id", journeyId);
+        intent.putExtra("journey_id", mJourneyId);
         startActivity(intent);
     }
 
@@ -612,9 +609,9 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void moveToMainActiity() {
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
-        editorScreen.commit();
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+        mEditorScreen.commit();
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
@@ -623,9 +620,9 @@ public class VehicleMoveActivity extends AppCompatActivity implements OnMapReady
 
     @Override
     public void sendSOSSuccess() {
-        editorScreen = sharedPreferencesScreen.edit();
-        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
-        editorScreen.commit();
+        mEditorScreen = mSharedPreferencesScreen.edit();
+        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+        mEditorScreen.commit();
     }
 
     @Override

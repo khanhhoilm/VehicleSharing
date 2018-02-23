@@ -6,27 +6,27 @@ import retrofit2.Response;
 import vehiclessharing.vehiclessharing.model.ResultSendRequest;
 
 public class SendRequestAPI {
-    private RestManager restManager;
-    private SendRequestInterface sendRequestInterface;
+    private RestManager mRestManager;
+    private SendRequestInterface mSendRequestInterface;
 
     public SendRequestAPI(SendRequestInterface sendRequestInterface) {
-        this.sendRequestInterface = sendRequestInterface;
-        restManager=new RestManager();
+        this.mSendRequestInterface = sendRequestInterface;
+        mRestManager=new RestManager();
     }
 
     public void sendRequestToChosenUser(String apiToken, int receiverId, String note){
-        restManager.getApiService().sendRequestTogether(apiToken,receiverId,note).enqueue(new Callback<ResultSendRequest>() {
+        mRestManager.getApiService().sendRequestTogether(apiToken,receiverId,note).enqueue(new Callback<ResultSendRequest>() {
             @Override
             public void onResponse(Call<ResultSendRequest> call, Response<ResultSendRequest> response) {
                 if(response.isSuccessful() && response.body().getStatus().getError() == 0){
-                sendRequestInterface.sendRequestSuccess();}
+                    mSendRequestInterface.sendRequestSuccess();}
                 else {
-                    sendRequestInterface.sendRequestFailure();
+                    mSendRequestInterface.sendRequestFailure();
                 }
             }
             @Override
             public void onFailure(Call<ResultSendRequest> call, Throwable t) {
-                sendRequestInterface.sendRequestFailure();
+                mSendRequestInterface.sendRequestFailure();
             }
         });
     }

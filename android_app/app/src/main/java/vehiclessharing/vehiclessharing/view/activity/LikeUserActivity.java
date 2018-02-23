@@ -13,35 +13,35 @@ import vehiclessharing.vehiclessharing.api.FavoriteUserAPI;
 
 public class LikeUserActivity extends AppCompatActivity implements View.OnClickListener, FavoriteUserAPI.FavoriteCallback {
 
-    private TextView txtLike, txtIntermediate;
+    private TextView mTxtLike, mTxtIntermediate;
     public static String PARTNER_ID = "partner_id";
-    private int partnerId;
-    private ProgressBar progressBar;
+    private int mPartnerId;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_like_user);
-        partnerId = getIntent().getExtras().getInt(PARTNER_ID, 0);
+        mPartnerId = getIntent().getExtras().getInt(PARTNER_ID, 0);
         addControls();
         addEvents();
     }
 
     private void addEvents() {
-        txtLike.setOnClickListener(this);
-        txtIntermediate.setOnClickListener(this);
+        mTxtLike.setOnClickListener(this);
+        mTxtIntermediate.setOnClickListener(this);
     }
 
     private void addControls() {
-        txtLike = findViewById(R.id.txtLike);
-        txtIntermediate = findViewById(R.id.txtIntermediate);
-        progressBar=findViewById(R.id.progressBar);
+        mTxtLike = findViewById(R.id.txtLike);
+        mTxtIntermediate = findViewById(R.id.txtIntermediate);
+        mProgressBar=findViewById(R.id.progressBar);
     }
 
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.txtLike) {
-            progressBar.setVisibility(View.VISIBLE);
+            mProgressBar.setVisibility(View.VISIBLE);
             addToFavorite();
         } else if (view.getId() == R.id.txtIntermediate) {
             backToMainActivity();
@@ -55,21 +55,21 @@ public class LikeUserActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void addToFavorite() {
-        if (partnerId != 0) {
+        if (mPartnerId != 0) {
             FavoriteUserAPI favoriteUserAPI = new FavoriteUserAPI(this);
-            favoriteUserAPI.like(MainActivity.sessionId, partnerId);
+            favoriteUserAPI.like(MainActivity.sessionId, mPartnerId);
         }
     }
 
     @Override
     public void favoriteSuccess() {
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
         backToMainActivity();
     }
 
     @Override
     public void favoriteFailure() {
         Toast.makeText(this, "failure", Toast.LENGTH_SHORT).show();
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
     }
 }

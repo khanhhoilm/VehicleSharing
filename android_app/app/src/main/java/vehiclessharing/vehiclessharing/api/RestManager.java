@@ -1,8 +1,5 @@
 package vehiclessharing.vehiclessharing.api;
 
-
-import android.icu.util.TimeUnit;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -16,8 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestManager {
 
-    private ApiService apiService;
-
+    private ApiService mApiService;
 
     public ApiService getApiService() {
         Gson gson = new GsonBuilder().create();
@@ -32,7 +28,6 @@ public class RestManager {
                 okhttp3.Request original = chain.request();
 
                 okhttp3.Request request = original.newBuilder()
-
                        // .header("User-Agent",headerClient)
                         .method(original.method(), original.body())
                         .build();
@@ -41,16 +36,14 @@ public class RestManager {
         });
         OkHttpClient client= httpClient.build();
 
-        if (apiService == null) {
-
+        if (mApiService == null) {
             Retrofit retrofit = new Retrofit.Builder()
                     .baseUrl(ApiService.BASE_URL).client(client)
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
 
-            apiService = retrofit.create(ApiService.class);
+            mApiService = retrofit.create(ApiService.class);
         }
-        return apiService;
+        return mApiService;
     }
-
 }

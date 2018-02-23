@@ -16,11 +16,11 @@ import vehiclessharing.vehiclessharing.view.fragment.HistoryDriverFragment;
 import vehiclessharing.vehiclessharing.view.fragment.HistoryHikerFragment;
 
 public class HistoryActivity extends AppCompatActivity {
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
-    private HistoryFragmentPagerAdapter adapter;
-    public static Activity activity;
-    private Toolbar toolbar;
+    private ViewPager mViewPager;
+    private TabLayout mTabLayout;
+    private HistoryFragmentPagerAdapter mAdapter;
+    public static Activity sActivity;
+    private Toolbar mToolbar;
 
 
     @Override
@@ -38,7 +38,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void addEvents() {
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d("Back button", "Back button click");
@@ -48,10 +48,10 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void addControls() {
-        toolbar = findViewById(R.id.toolbar_General);
-        toolbar.setTitle(getString(R.string.history));
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
-        setSupportActionBar(toolbar);
+        mToolbar = findViewById(R.id.toolbar_General);
+        mToolbar.setTitle(getString(R.string.history));
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp));
@@ -60,15 +60,15 @@ public class HistoryActivity extends AppCompatActivity {
             }
         }
 
-        viewPager= findViewById(R.id.viewpager);
-        tabLayout= findViewById(R.id.sliding_tabs);
+        mViewPager= findViewById(R.id.viewpager);
+        mTabLayout= findViewById(R.id.sliding_tabs);
 
-        adapter = new HistoryFragmentPagerAdapter(getSupportFragmentManager(),this);
-        adapter.addFragment(HistoryDriverFragment.newInstance(0));
-        adapter.addFragment(HistoryHikerFragment.newInstance(1));
+        mAdapter = new HistoryFragmentPagerAdapter(getSupportFragmentManager(),this);
+        mAdapter.addFragment(HistoryDriverFragment.newInstance(0));
+        mAdapter.addFragment(HistoryHikerFragment.newInstance(1));
 
-        viewPager.setAdapter(adapter);
-        tabLayout.setupWithViewPager(viewPager);
+        mViewPager.setAdapter(mAdapter);
+        mTabLayout.setupWithViewPager(mViewPager);
     }
 
 }

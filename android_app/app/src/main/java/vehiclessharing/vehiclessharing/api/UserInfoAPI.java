@@ -12,45 +12,45 @@ import vehiclessharing.vehiclessharing.model.UserInfo;
  */
 
 public class UserInfoAPI {
-    private RestManager restManager;
-    private GetInfoUserCallback getInfoUserCallback;
+    private RestManager mRestManager;
+    private GetInfoUserCallback mGetInfoUserInterfaceCallback;
 
     public UserInfoAPI(GetInfoUserCallback getInfoUserCallback) {
-        this.getInfoUserCallback = getInfoUserCallback;
-        restManager=new RestManager();
+        this.mGetInfoUserInterfaceCallback = getInfoUserCallback;
+        mRestManager=new RestManager();
     }
 
     public void getUserInfoFromAPI(String apiToken, int userId) {
-        restManager.getApiService().getUserInfo(apiToken,userId).enqueue(new Callback<UserInfo>() {
+        mRestManager.getApiService().getUserInfo(apiToken,userId).enqueue(new Callback<UserInfo>() {
             @Override
             public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
                 if(response.isSuccessful()&&response.body().getStatus().getError()==0) {
-                    getInfoUserCallback.getInfoUserSuccess(response.body().getInfomationUser());
+                    mGetInfoUserInterfaceCallback.getInfoUserSuccess(response.body().getInfomationUser());
                 }else {
-                    getInfoUserCallback.getUserInfoFailure("Response unsuccessful or info user null");
+                    mGetInfoUserInterfaceCallback.getUserInfoFailure("Response unsuccessful or info user null");
                 }
             }
 
             @Override
             public void onFailure(Call<UserInfo> call, Throwable t) {
-                getInfoUserCallback.getUserInfoFailure("onFailure");
+                mGetInfoUserInterfaceCallback.getUserInfoFailure("onFailure");
             }
         });
     }
     public void getMyInfo(String apiToken) {
-        restManager.getApiService().getMyInfo(apiToken).enqueue(new Callback<UserInfo>() {
+        mRestManager.getApiService().getMyInfo(apiToken).enqueue(new Callback<UserInfo>() {
             @Override
             public void onResponse(Call<UserInfo> call, Response<UserInfo> response) {
                 if(response.isSuccessful()&&response.body().getStatus().getError()==0) {
-                    getInfoUserCallback.getInfoUserSuccess(response.body().getInfomationUser());
+                    mGetInfoUserInterfaceCallback.getInfoUserSuccess(response.body().getInfomationUser());
                 }else {
-                    getInfoUserCallback.getUserInfoFailure("Response unsuccessful or info user null");
+                    mGetInfoUserInterfaceCallback.getUserInfoFailure("Response unsuccessful or info user null");
                 }
             }
 
             @Override
             public void onFailure(Call<UserInfo> call, Throwable t) {
-                getInfoUserCallback.getUserInfoFailure("onFailure");
+                mGetInfoUserInterfaceCallback.getUserInfoFailure("onFailure");
             }
         });
     }

@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,32 +17,27 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import co.vehiclessharing.R;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import vehiclessharing.vehiclessharing.api.RestManager;
 import vehiclessharing.vehiclessharing.api.SendRequestAPI;
 import vehiclessharing.vehiclessharing.view.activity.MainActivity;
-import vehiclessharing.vehiclessharing.model.ResultSendRequest;
 
-public class SendRequestFragment extends DialogFragment implements View.OnClickListener,SendRequestAPI.SendRequestInterface {
+public class SendRequestFragment extends DialogFragment implements View.OnClickListener, SendRequestAPI.SendRequestInterface {
     private static final String API_TOKEN = "api_token";
     private static final String RECEIVER_ID = "receiver_id";
 
-    private String apiToken;
-    private int receiverId;
-    private EditText txtNote;
-    private Button btnSend, btnCancel;
-    private RestManager restManager;
+    private String mApiToken;
+    private int mReceiverId;
+    private EditText mTxtNote;
+    private Button mBtnSend, mBtnCancel;
     private Activity mActivity;
-    private static SendRequestCallBack sendRequestCallBack;
+    private static SendRequestCallBack sSendRequestCallBack;
 
     public SendRequestFragment() {
 
     }
 
     public static SendRequestFragment newInstance(String apiToken, int receiverId, SendRequestCallBack callBack) {
-        sendRequestCallBack = callBack;
+        sSendRequestCallBack = callBack;
         SendRequestFragment fragment = new SendRequestFragment();
         Bundle args = new Bundle();
         args.putString(API_TOKEN, apiToken);
@@ -56,8 +50,8 @@ public class SendRequestFragment extends DialogFragment implements View.OnClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            apiToken = getArguments().getString(API_TOKEN);
-            receiverId = getArguments().getInt(RECEIVER_ID);
+            mApiToken = getArguments().getString(API_TOKEN);
+            mReceiverId = getArguments().getInt(RECEIVER_ID);
         }
     }
 
@@ -81,15 +75,15 @@ public class SendRequestFragment extends DialogFragment implements View.OnClickL
     }
 
     private void addEvents() {
-        btnSend.setOnClickListener(this);
-        btnCancel.setOnClickListener(this);
+        mBtnSend.setOnClickListener(this);
+        mBtnCancel.setOnClickListener(this);
 
     }
 
     private void addControls(View view) {
-        txtNote = (EditText) view.findViewById(R.id.txtNote);
-        btnSend = (Button) view.findViewById(R.id.btnSendrequest);
-        btnCancel = (Button) view.findViewById(R.id.btnCancelSend);
+        mTxtNote = (EditText) view.findViewById(R.id.txtNote);
+        mBtnSend = (Button) view.findViewById(R.id.btnSendrequest);
+        mBtnCancel = (Button) view.findViewById(R.id.btnCancelSend);
     }
 
 
@@ -117,11 +111,11 @@ public class SendRequestFragment extends DialogFragment implements View.OnClickL
     }
 
     public void sendRequestToChosenUser() {
-        Log.d("sendRequestTogether", "api_token: " + apiToken + ", receiver_id: " + String.valueOf(receiverId));
-        String note = txtNote.getText().toString();
+        Log.d("sendRequestTogether", "api_token: " + mApiToken + ", receiver_id: " + String.valueOf(mReceiverId));
+        String note = mTxtNote.getText().toString();
 
-        SendRequestAPI sendRequestAPI=new SendRequestAPI(this);
-        sendRequestAPI.sendRequestToChosenUser(apiToken,receiverId,note);
+        SendRequestAPI sendRequestAPI = new SendRequestAPI(this);
+        sendRequestAPI.sendRequestToChosenUser(mApiToken, mReceiverId, note);
     }
 
     @Override
@@ -130,7 +124,7 @@ public class SendRequestFragment extends DialogFragment implements View.OnClickL
             dismiss();
             Toast.makeText(mActivity, mActivity.getString(R.string.wait_accept), Toast.LENGTH_SHORT).show();
         }
-        sendRequestCallBack.sendRequestSuccess();
+        sSendRequestCallBack.sendRequestSuccess();
 
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         java.text.SimpleDateFormat sdf1 = new java.text.SimpleDateFormat("HH:mm");

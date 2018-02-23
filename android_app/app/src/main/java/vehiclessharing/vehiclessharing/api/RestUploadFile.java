@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 public class RestUploadFile {
-        private ApiService apiService;
+        private ApiService mApiService;
 
         public ApiService getApiService() {
             Gson gson = new GsonBuilder().create();
@@ -40,16 +40,16 @@ public class RestUploadFile {
             });
             OkHttpClient client = httpClient.build();
 
-            if (apiService == null) {
+            if (mApiService == null) {
 
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(ApiService.BASE_URL_UPLOAD_IMAGE).client(client)
                         .addConverterFactory(GsonConverterFactory.create(gson))
                         .build();
 
-                apiService = retrofit.create(ApiService.class);
+                mApiService = retrofit.create(ApiService.class);
             }
-            return apiService;
+            return mApiService;
 
         }
 }

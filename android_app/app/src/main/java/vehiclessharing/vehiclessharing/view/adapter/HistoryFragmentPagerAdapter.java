@@ -22,10 +22,11 @@ import vehiclessharing.vehiclessharing.view.fragment.HistoryHikerFragment;
 
 public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
     final int PAGE_COUNT = 2;
+
     private List<Fragment> mFragmentList = new ArrayList<>();
-    private String tabTitles[] = new String[]{"Khi là Người chở", "Khi là người quá giang"};
+    private String mTabTitles[] = new String[]{"Khi là Người chở", "Khi là người quá giang"};
     private Context mContext;
-    private int anotherUserId = 0;
+    private int mAnotherUserId = 0;
 
     public HistoryFragmentPagerAdapter(FragmentManager fm, Context context) {
         super(fm);
@@ -35,14 +36,14 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
     public HistoryFragmentPagerAdapter(FragmentManager fm, Context context, int anotherUserId) {
         super(fm);
         this.mContext = context;
-        this.anotherUserId = anotherUserId;
+        this.mAnotherUserId = anotherUserId;
     }
 
 
     @Override
     public Fragment getItem(int position) {
         Fragment fragment = null;
-        if (anotherUserId == 0) {
+        if (mAnotherUserId == 0) {
             //use in my histoy
             if (position == 0) {
                 fragment = HistoryDriverFragment.newInstance(position);
@@ -52,9 +53,9 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
         } else {
             //use in another user history
             if (position == 0) {
-                fragment = HistoryDriverFragment.newInstance(position, anotherUserId);
+                fragment = HistoryDriverFragment.newInstance(position, mAnotherUserId);
             } else {
-                fragment = HistoryHikerFragment.newInstance(position, anotherUserId);
+                fragment = HistoryHikerFragment.newInstance(position, mAnotherUserId);
             }
         }
 
@@ -83,7 +84,7 @@ public class HistoryFragmentPagerAdapter extends FragmentPagerAdapter {
 
         image.setBounds(0, 0, image.getIntrinsicWidth(), image.getIntrinsicHeight());
         // Replace blank spaces with image icon
-        SpannableString sb = new SpannableString("   " + tabTitles[position]);
+        SpannableString sb = new SpannableString("   " + mTabTitles[position]);
         ImageSpan imageSpan = new ImageSpan(image, ImageSpan.ALIGN_BOTTOM);
         sb.setSpan(imageSpan, 0, 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         return sb;

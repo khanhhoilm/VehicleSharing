@@ -3,7 +3,7 @@ package vehiclessharing.vehiclessharing.api;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import vehiclessharing.vehiclessharing.model.SignInResult;
+import vehiclessharing.vehiclessharing.model.SignInResponse;
 
 public class SignInAPI {
     private RestManager restManager;
@@ -25,9 +25,9 @@ public class SignInAPI {
     }
 
     public void signIn(String phone, String password) {
-        restManager.getApiService().signIn(phone, password).enqueue(new Callback<SignInResult>() {
+        restManager.getApiService().signIn(phone, password).enqueue(new Callback<SignInResponse>() {
             @Override
-            public void onResponse(Call<SignInResult> call, Response<SignInResult> response) {
+            public void onResponse(Call<SignInResponse> call, Response<SignInResponse> response) {
                 if (response.isSuccessful()) {
                     switch (response.body().getStatus().getError()) {
                         case 0:
@@ -41,16 +41,16 @@ public class SignInAPI {
             }
 
             @Override
-            public void onFailure(Call<SignInResult> call, Throwable t) {
+            public void onFailure(Call<SignInResponse> call, Throwable t) {
                 signInInterfaceCallback.signInFailure();
             }
         });
     }
 
     public interface SignInInterfaceCallback {
-        void signInSuccess(SignInResult signInResult);
+        void signInSuccess(SignInResponse signInResult);
 
-        void signInUnsuccess(SignInResult signInResult);
+        void signInUnsuccess(SignInResponse signInResult);
 
         void signInFailure();
     }

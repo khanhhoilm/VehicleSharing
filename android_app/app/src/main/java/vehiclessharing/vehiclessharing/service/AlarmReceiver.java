@@ -18,11 +18,6 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {
-        //this will update the UI with message
-
-        //this will sound the alarm tone
-        //this will sound the alarm once, if you wish to
-        //raise alarm in loop continuously then use MediaPlayer and setLooping(true)
         Uri alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         if (alarmUri == null) {
             alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);

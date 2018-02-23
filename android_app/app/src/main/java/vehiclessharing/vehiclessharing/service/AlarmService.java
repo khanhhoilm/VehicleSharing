@@ -16,7 +16,7 @@ import vehiclessharing.vehiclessharing.view.activity.VehicleMoveActivity;
  */
 
 public class AlarmService extends IntentService {
-    private NotificationManager alarmNotificationManager;
+    private NotificationManager mAlarmNotificationManager;
 
     public AlarmService() {
         super("AlarmService");
@@ -29,7 +29,7 @@ public class AlarmService extends IntentService {
 
     private void sendNotification(String msg) {
         Log.d("AlarmService", "Preparing to send notification...: " + msg);
-        alarmNotificationManager = (NotificationManager) this
+        mAlarmNotificationManager = (NotificationManager) this
                 .getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent intent=new Intent(this,VehicleMoveActivity.class);
@@ -47,7 +47,7 @@ public class AlarmService extends IntentService {
 
 
         alamNotificationBuilder.setContentIntent(contentIntent);
-        alarmNotificationManager.notify(1, alamNotificationBuilder.build());
+        mAlarmNotificationManager.notify(1, alamNotificationBuilder.build());
         Log.d("AlarmService", "Notification sent.");
     }
 }

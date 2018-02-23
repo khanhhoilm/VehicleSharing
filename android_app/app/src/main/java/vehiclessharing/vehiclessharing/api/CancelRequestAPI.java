@@ -9,29 +9,29 @@ import vehiclessharing.vehiclessharing.model.StatusResponse;
 
 public class CancelRequestAPI {
 
-    private RestManager restManager;
-    private CancelRequestCallBack cancelRequestCallBack;
+    private RestManager mRestManager;
+    private CancelRequestCallBack mCancelRequestCallBack;
 
     public CancelRequestAPI(CancelRequestCallBack cancelRequestCallBack) {
-        this.cancelRequestCallBack = cancelRequestCallBack;
-        restManager=new RestManager();
+        this.mCancelRequestCallBack = cancelRequestCallBack;
+        mRestManager=new RestManager();
     }
 
     public void cancelRequest(String apiToken) {
-        restManager.getApiService().cancelRequest(apiToken).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().cancelRequest(apiToken).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getStatus().getError() == 0) {
-                    cancelRequestCallBack.cancelRequestSuccess(true);
+                    mCancelRequestCallBack.cancelRequestSuccess(true);
                 } else {
-                    cancelRequestCallBack.cancelRequestSuccess(false);
+                    mCancelRequestCallBack.cancelRequestSuccess(false);
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
                 Log.d("CancelRequest", "failed");
-                cancelRequestCallBack.cancelRequestFailed();
+                mCancelRequestCallBack.cancelRequestFailed();
             }
         });
     }

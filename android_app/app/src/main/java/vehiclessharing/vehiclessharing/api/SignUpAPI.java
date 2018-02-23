@@ -7,8 +7,8 @@ import vehiclessharing.vehiclessharing.model.StatusResponse;
 
 
 public class SignUpAPI {
-    private RestManager restManager;
-    private SignUpInterface signUpInterface;
+    private RestManager mRestManager;
+    private SignUpInterface mSignUpInterface;
     private static SignUpAPI instance;
     public static SignUpAPI getInstance(SignUpInterface signUpInterface){
         if(instance==null){
@@ -18,31 +18,31 @@ public class SignUpAPI {
     }
 
     private SignUpAPI(SignUpInterface signUpInterface) {
-        this.signUpInterface = signUpInterface;
-        restManager=new RestManager();
+        this.mSignUpInterface = signUpInterface;
+        mRestManager=new RestManager();
     }
 
     public void signUp(String phone,String name, String password, int gender){
-        restManager.getApiService().signUp(phone,name,password,gender).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().signUp(phone,name,password,gender).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if(response.isSuccessful()){
                     switch (response.body().getStatus().getError()) {
                         case 0:
-                            signUpInterface.signUpSuccess();
+                            mSignUpInterface.signUpSuccess();
                             break;
                         case 1:
-                            signUpInterface.signUpUnsuccess();
+                            mSignUpInterface.signUpUnsuccess();
                             break;
                     }
                 }else {
-                    signUpInterface.signUpFailure();
+                    mSignUpInterface.signUpFailure();
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                signUpInterface.signUpFailure();
+                mSignUpInterface.signUpFailure();
             }
         });
     }

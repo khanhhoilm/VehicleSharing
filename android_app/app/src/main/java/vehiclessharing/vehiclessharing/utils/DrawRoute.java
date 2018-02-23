@@ -18,7 +18,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 
 import vehiclessharing.vehiclessharing.view.activity.MainActivity;
-import vehiclessharing.vehiclessharing.permission.isNetworkAvailable;
 
 import static android.content.Context.LOCATION_SERVICE;
 
@@ -31,14 +30,14 @@ public class DrawRoute implements RoutingListener {
      * Draw road between 2 location in google map
      */
     private Context mContext;
-    public static Polyline polylineNotCurUser;
+    public static Polyline sPolylineNotCurUser;
     private GoogleMap mGoogleMap;
     private int mSubject = 0;
 
 
     public DrawRoute(Context mContext, GoogleMap googleMap) {
         this.mContext = mContext;
-        polylineNotCurUser = null;
+        sPolylineNotCurUser = null;
         mGoogleMap = googleMap;
     }
 
@@ -58,7 +57,7 @@ public class DrawRoute implements RoutingListener {
     public void drawroadBetween2Location(LatLng latLng1, LatLng latLng2, int subject) {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
-        if (!isNetworkAvailable.isOnline(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
+        if (!NetworkUtils.isNetworkConnected(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
         }
@@ -75,7 +74,7 @@ public class DrawRoute implements RoutingListener {
         mSubject = subject;
         LocationManager lm = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
        // CheckInternetAndLocation check = new CheckInternetAndLocation(mContext);
-        if (!isNetworkAvailable.isOnline(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
+        if (!NetworkUtils.isNetworkConnected(mContext) || !MainActivity.checkerGPS.checkLocationPermission() ||
                 !lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 !lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
         }

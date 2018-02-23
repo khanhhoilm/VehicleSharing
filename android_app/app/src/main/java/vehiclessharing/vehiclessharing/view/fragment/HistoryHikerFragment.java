@@ -18,10 +18,10 @@ import java.util.List;
 
 import co.vehiclessharing.R;
 import vehiclessharing.vehiclessharing.api.HistoryDataAPI;
-import vehiclessharing.vehiclessharing.view.activity.MainActivity;
-import vehiclessharing.vehiclessharing.view.adapter.HistoryItemAdapter;
 import vehiclessharing.vehiclessharing.model.JourneyDone;
 import vehiclessharing.vehiclessharing.model.UserHistoryInfo;
+import vehiclessharing.vehiclessharing.view.activity.MainActivity;
+import vehiclessharing.vehiclessharing.view.adapter.HistoryItemAdapter;
 
 /**
  * Created by Hihihehe on 6/10/2017.
@@ -29,16 +29,15 @@ import vehiclessharing.vehiclessharing.model.UserHistoryInfo;
 
 public class HistoryHikerFragment extends Fragment implements HistoryDataAPI.HistoryHikerCallback, SwipeRefreshLayout.OnRefreshListener {
     public static final String ARG_PAGE = "ARG_PAGE";
-    private List<JourneyDone> journeyDoneArrayList;
-    private RecyclerView rvHistory;
-    private HistoryItemAdapter adapter;
+    private List<JourneyDone> mJourneyDoneArrayList;
+    private RecyclerView mRvHistory;
+    private HistoryItemAdapter mAdapter;
     private Context mContext;
-    private int page;
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private String userType = "hiker";
-    private TextView txtFailure;
-    private int anotherUserId;
-    private HistoryDataAPI historyDataAPI;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private String mUserType = "hiker";
+    private TextView mTxtFailure;
+    private int mAnotherUserId;
+    private HistoryDataAPI mHistoryDataAPI;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -68,17 +67,16 @@ public class HistoryHikerFragment extends Fragment implements HistoryDataAPI.His
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
         if (getArguments() != null) {
-            page = getArguments().getInt(ARG_PAGE);
-            anotherUserId = getArguments().getInt(HistoryDriverFragment.USER_ID, 0);
+            mAnotherUserId = getArguments().getInt(HistoryDriverFragment.USER_ID, 0);
         }
-        historyDataAPI=new HistoryDataAPI(this);
+        mHistoryDataAPI = new HistoryDataAPI(this);
 
         addControls(view);
 
-        if (anotherUserId == 0) {
-           historyDataAPI.getHistoryHiker(MainActivity.sessionId, userType);
+        if (mAnotherUserId == 0) {
+            mHistoryDataAPI.getHistoryHiker(MainActivity.sSessionId, mUserType);
         } else {
-            historyDataAPI.getHistoryAnotherHiker(MainActivity.sessionId, userType, anotherUserId);
+            mHistoryDataAPI.getHistoryAnotherHiker(MainActivity.sSessionId, mUserType, mAnotherUserId);
 
         }
         return view;
@@ -92,46 +90,46 @@ public class HistoryHikerFragment extends Fragment implements HistoryDataAPI.His
 
     private void addControls(View view) {
         mContext = getContext();
-        rvHistory = view.findViewById(R.id.rcHistory);
-        swipeRefreshLayout = view.findViewById(R.id.swipeLayout);
-        txtFailure = view.findViewById(R.id.txtFailure);
-        swipeRefreshLayout.setRefreshing(true);
-        swipeRefreshLayout.setOnRefreshListener(this);
-        if(anotherUserId==0) {
-            adapter = new HistoryItemAdapter(mContext);
-        }else {
-            adapter=new HistoryItemAdapter(mContext,true);
+        mRvHistory = view.findViewById(R.id.rcHistory);
+        mSwipeRefreshLayout = view.findViewById(R.id.swipeLayout);
+        mTxtFailure = view.findViewById(R.id.txtFailure);
+        mSwipeRefreshLayout.setRefreshing(true);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        if (mAnotherUserId == 0) {
+            mAdapter = new HistoryItemAdapter(mContext);
+        } else {
+            mAdapter = new HistoryItemAdapter(mContext, true);
         }
-        journeyDoneArrayList = new ArrayList<>();
-        adapter.add(journeyDoneArrayList);
-        rvHistory.setAdapter(adapter);
+        mJourneyDoneArrayList = new ArrayList<>();
+        mAdapter.add(mJourneyDoneArrayList);
+        mRvHistory.setAdapter(mAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        rvHistory.setLayoutManager(linearLayoutManager);
+        mRvHistory.setLayoutManager(linearLayoutManager);
     }
 
     @Override
     public void getHistoryHikerSuccess(UserHistoryInfo userHistoryInfo, String userType) {
-        swipeRefreshLayout.setRefreshing(false);
+        mSwipeRefreshLayout.setRefreshing(false);
         if (userHistoryInfo != null && userHistoryInfo.getSuccessJourney().size() > 0) {
-            journeyDoneArrayList = userHistoryInfo.getSuccessJourney();
-            adapter.add(journeyDoneArrayList);
-            adapter.notifyDataSetChanged();
-            txtFailure.setVisibility(View.GONE);
+            mJourneyDoneArrayList = userHistoryInfo.getSuccessJourney();
+            mAdapter.add(mJourneyDoneArrayList);
+            mAdapter.notifyDataSetChanged();
+            mTxtFailure.setVisibility(View.GONE);
         } else {
-            txtFailure.setVisibility(View.VISIBLE);
+            mTxtFailure.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     public void getHistoryFailured(String message) {
-        swipeRefreshLayout.setRefreshing(false);
+        mSwipeRefreshLayout.setRefreshing(false);
         Toast.makeText(mContext, mContext.getResources().getString(R.string.no_internet), Toast.LENGTH_SHORT).show();
 
     }
 
     @Override
     public void onRefresh() {
-        historyDataAPI.getHistoryHiker(MainActivity.sessionId, userType);
+        mHistoryDataAPI.getHistoryHiker(MainActivity.sSessionId, mUserType);
     }
 }

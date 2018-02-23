@@ -18,7 +18,6 @@ import vehiclessharing.vehiclessharing.utils.Helper;
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    // private static final String TAG = "DatabaseHelper";
     private static final String TAG = DatabaseHelper.class.getSimpleName();
     private static final String DATABASE_NAME = "vehicles_sharing.db";
     private static final int DATABASE_VERSION = 1;

@@ -222,47 +222,4 @@ public class TrackGPSService extends Service implements GoogleApiClient.Connecti
         super.onDestroy();
         isRunning = false;
     }
-//    private String getMapsApiDirectionsUrl(LatLng origin, LatLng dest, ArrayList<LatLng> waypoints) {
-//        // Origin of route
-//        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-//
-//        // Destination of route
-//        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-//
-//
-//        // Sensor enabled
-//        String sensor = "sensor=false";
-//
-//        //Waypoints
-//        String str_waypoints = "";
-//        if(waypoints != null){
-//            str_waypoints = "waypoints=";
-//            boolean firts = false;
-//            for (LatLng latlng : waypoints) {
-//                if (!firts) {
-//                    str_waypoints += "via:" + latlng.latitude + "," + latlng.longitude;
-//                    firts = true;
-//                } else {
-//                    str_waypoints += "|via:" + latlng.latitude + "," + latlng.longitude;
-//                }
-//            }
-//        }
-//
-//
-//        //key
-//        String keyDirection = "key=" + DIRECTION_KEY_API;
-//
-//        // Building the parameters to the web service
-////        String parameters = str_origin+"&"+str_dest+"&"+sensor;
-//        String parameters = str_origin + "&" + str_dest + "&" + str_waypoints + "&" + keyDirection;
-//
-//        // Output format
-//        String output = "json";
-//
-//        // Building the url to the web service
-//        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-//
-//        return url;
-//
-//    }
 }

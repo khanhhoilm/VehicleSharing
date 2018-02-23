@@ -14,18 +14,18 @@ import vehiclessharing.vehiclessharing.authentication.SessionManager;
 import vehiclessharing.vehiclessharing.model.StatusResponse;
 
 public class LogoutAPI {
-    private RestManager apiLogout;
+    private RestManager mApiLogout;
     private boolean isLogout = false;
 
     public LogoutAPI() {
-        apiLogout = new RestManager();
+        mApiLogout = new RestManager();
     }
     public boolean actionLogout(final Activity activity, final FragmentManager fragmentManager) {
         final SharedPreferences sharedPreferences = activity.getSharedPreferences(SessionManager.PREF_NAME_LOGIN, Context.MODE_PRIVATE);
         int userId = sharedPreferences.getInt(SessionManager.USER_ID, 3);
         String sessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
 
-        apiLogout.getApiService().signOut(sessionId).enqueue(new Callback<StatusResponse>() {
+        mApiLogout.getApiService().signOut(sessionId).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 Log.d("LogOut","success");

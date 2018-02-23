@@ -33,7 +33,6 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import java.util.ArrayList;
@@ -41,55 +40,46 @@ import java.util.List;
 
 import co.vehiclessharing.R;
 import vehiclessharing.vehiclessharing.api.AddRequestAPI;
-import vehiclessharing.vehiclessharing.api.CancelRequestAPI;
-import vehiclessharing.vehiclessharing.api.RestManager;
 import vehiclessharing.vehiclessharing.authentication.SessionManager;
 import vehiclessharing.vehiclessharing.interfaces.AuthenticationFail;
 import vehiclessharing.vehiclessharing.model.ActiveUser;
 import vehiclessharing.vehiclessharing.model.RequestResult;
 import vehiclessharing.vehiclessharing.utils.PlaceHelper;
 import vehiclessharing.vehiclessharing.view.activity.MainActivity;
-import vehiclessharing.vehiclessharing.view.adapter.PlaceAutocompleteAdapter;
 import vehiclessharing.vehiclessharing.view.adapter.SpinerVehicleTypeAdapter;
 
-public class AddRequestFragment extends DialogFragment implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener,
-        AddRequestAPI.AddRequestInterfaceCallback {
+public class AddRequestFragment extends DialogFragment implements View.OnClickListener,
+        GoogleApiClient.OnConnectionFailedListener, AddRequestAPI.AddRequestInterfaceCallback {
     // TODO: Rename parameter arguments, choose names that match
 
     private static final String WHAT_BTN_CLICK = "what_btn_click";
     private static final String PRESENT_ADDRESS = "present_address";
-    private String getWhatBtnClick = "";
-    private TextView txtTitle, txtTimeStart;
-
-    private Button btnOk, btnCancel;
-    private Spinner spType;
-    private SpinerVehicleTypeAdapter adapter;
-    protected GoogleApiClient mGoogleApiClient;
-
-    private PlaceAutocompleteAdapter mAdapter;
     private int CUR_PLACE_AUTOCOMPLETE_REQUEST_CODE = 3;
     private int DES_PLACE_AUTOCOMPLETE_REQUEST_CODE = 4;
-    private CancelRequestAPI.CancelRequestCallBack cancelRequestCallBack;
-    private int userId;
-    private String sessionId = "", refreshedToken = "";
+
+    private String mGetWhatBtnClick = "";
+    private TextView mTxtTitle, mTxtTimeStart;
+
+    private Button mBtnOk, mBtnCancel;
+    private Spinner mSpType;
+    private SpinerVehicleTypeAdapter mAdapter;
+    protected GoogleApiClient mGoogleApiClient;
+
+    private int mUserId;
+    private String mSessionId = "", mRefreshedToken = "";
     private Context mContext;
-    private LatLng srcLatLng, desLatLng;
-    private String time = "";
+    private LatLng mSrcLatLng, mDesLatLng;
+    private String mTime = "";
 
+    java.util.Calendar mCalendar;
+    java.text.SimpleDateFormat mSimpleDateFormat;
 
-    java.util.Calendar calendar = java.util.Calendar.getInstance();
-    java.text.SimpleDateFormat sdf1 = new java.text.SimpleDateFormat("HH:mm");
-    java.text.SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("dd/MM/yyyy");
-    private static final LatLngBounds myBound = new LatLngBounds(new LatLng(-0, 0), new LatLng(0, 0));
-
-    private ImageView imgClearCurLocation, imgClearDesLocation;
-    private TextView txtCurLocation, txtDesLocation;
+    private ImageView mImgClearCurLocation, mImgClearDesLocation;
+    private TextView mTxtCurLocation, txtDesLocation;
     private Drawable mDrawable;
-    private RestManager mManager;
-    private String currentDay;
-    private int vehicleType = 1;
-    private String presentAdress = "";
-    private ProgressBar progressBar;
+    private int mVehicleType = 1;
+    private String mPresentAdress = "";
+    private ProgressBar mProgressBar;
     private OnFragmentAddRequestListener mListener;
 
     public AddRequestFragment() {
@@ -108,9 +98,12 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            getWhatBtnClick = getArguments().getString(WHAT_BTN_CLICK);
-            presentAdress = getArguments().getString(PRESENT_ADDRESS);
+            mGetWhatBtnClick = getArguments().getString(WHAT_BTN_CLICK);
+            mPresentAdress = getArguments().getString(PRESENT_ADDRESS);
         }
+        mCalendar = java.util.Calendar.getInstance();
+        mSimpleDateFormat = new java.text.SimpleDateFormat("HH:mm");
+
     }
 
     @Override
@@ -125,13 +118,13 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         View view = inflater.inflate(R.layout.fragment_add_request, container, false);
 
         addControls(view);
-        refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d("Token FCM", "Token Value: " + refreshedToken);
+        mRefreshedToken = FirebaseInstanceId.getInstance().getToken();
+        Log.d("Token FCM", "Token Value: " + mRefreshedToken);
 
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences(SessionManager.PREF_NAME_LOGIN, Context.MODE_PRIVATE);
-        userId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
-        sessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
-        Log.d("User Info", "User_id: " + String.valueOf(userId) + ", api_token: " + String.valueOf(sessionId));
+        mUserId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
+        mSessionId = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
+        Log.d("User Info", "User_id: " + String.valueOf(mUserId) + ", api_token: " + String.valueOf(mSessionId));
 
         // Inflate the layout for this fragment
         return view;
@@ -149,58 +142,57 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
     private void addControls(View view) {
         mContext = getActivity();
-        txtTitle = (TextView) view.findViewById(R.id.txtNeederDialogTitle);
+        mTxtTitle = (TextView) view.findViewById(R.id.txtNeederDialogTitle);
 
-        txtCurLocation = (EditText) view.findViewById(R.id.txtCurLocate);
+        mTxtCurLocation = (EditText) view.findViewById(R.id.txtCurLocate);
         txtDesLocation = (EditText) view.findViewById(R.id.txtDesLocate);
-        txtCurLocation.setOnClickListener(this);
+        mTxtCurLocation.setOnClickListener(this);
         txtDesLocation.setOnClickListener(this);
 
-        txtTimeStart = (TextView) view.findViewById(R.id.txtTimeStart);
-        btnOk = (Button) view.findViewById(R.id.btnAddOK);
-        btnCancel = (Button) view.findViewById(R.id.btnAddCancel);
-        progressBar = view.findViewById(R.id.progressBar);
+        mTxtTimeStart = (TextView) view.findViewById(R.id.txtTimeStart);
+        mBtnOk = (Button) view.findViewById(R.id.btnAddOK);
+        mBtnCancel = (Button) view.findViewById(R.id.btnAddCancel);
+        mProgressBar = view.findViewById(R.id.progressBar);
 
 
-        imgClearCurLocation = (ImageView) view.findViewById(R.id.imgClearCurLocation);
+        mImgClearCurLocation = (ImageView) view.findViewById(R.id.imgClearCurLocation);
         //set current location
-        imgClearDesLocation = (ImageView) view.findViewById(R.id.imgClearDesLocation);
-        txtTimeStart.setText(sdf1.format(calendar.getTime()));
-        currentDay = sdf2.format(calendar.getTime());
-        txtTimeStart.setOnClickListener(this);
-        imgClearCurLocation.setOnClickListener(this);
-        imgClearDesLocation.setOnClickListener(this);
+        mImgClearDesLocation = (ImageView) view.findViewById(R.id.imgClearDesLocation);
+        mTxtTimeStart.setText(mSimpleDateFormat.format(mCalendar.getTime()));
+        mTxtTimeStart.setOnClickListener(this);
+        mImgClearCurLocation.setOnClickListener(this);
+        mImgClearDesLocation.setOnClickListener(this);
 
-        btnOk.setOnClickListener(this);
-        btnCancel.setOnClickListener(this);
+        mBtnOk.setOnClickListener(this);
+        mBtnCancel.setOnClickListener(this);
 
         mDrawable = getResources().getDrawable(R.drawable.ic_warning_red_600_24dp);
         mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
-        if (!presentAdress.equals("")) {
-            txtCurLocation.setText(presentAdress);
+        if (!mPresentAdress.equals("")) {
+            mTxtCurLocation.setText(mPresentAdress);
         } else {
             try {
-                txtCurLocation.setText(PlaceHelper.getInstance(mContext).getCurrentPlace(MainActivity.mGoogleMap));
+                mTxtCurLocation.setText(PlaceHelper.getInstance(mContext).getCurrentPlace(MainActivity.mGoogleMap));
             } catch (Exception e) {
-                txtCurLocation.setText("");
+                mTxtCurLocation.setText("");
 
             }
         }
-        spType = (Spinner) view.findViewById(R.id.spVehicleType);
+        mSpType = (Spinner) view.findViewById(R.id.spVehicleType);
         List<String> type = new ArrayList<>();
         type.add("Xe máy");
         type.add("Ô tô");
-        adapter = new SpinerVehicleTypeAdapter(mContext, type);
-        spType.setAdapter(adapter);
-        switch (getWhatBtnClick) {
+        mAdapter = new SpinerVehicleTypeAdapter(mContext, type);
+        mSpType.setAdapter(mAdapter);
+        switch (mGetWhatBtnClick) {
             case "btnFindPeople":
-                txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_people));
-                spType.setVisibility(View.VISIBLE);
+                mTxtTitle.setText(mContext.getResources().getString(R.string.dialog_find_people));
+                mSpType.setVisibility(View.VISIBLE);
                 break;
             case "btnFindVehicles":
                 // vehicleType=0;
-                txtTitle.setText(mContext.getResources().getString(R.string.dialog_find_vehicle));
-                spType.setVisibility(View.GONE);
+                mTxtTitle.setText(mContext.getResources().getString(R.string.dialog_find_vehicle));
+                mSpType.setVisibility(View.GONE);
 
         }
     }
@@ -235,7 +227,7 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
         switch (v.getId()) {
             case R.id.txtCurLocate: {
-                txtCurLocation.setEnabled(false);
+                mTxtCurLocation.setEnabled(false);
                 try {
                     Intent intent =
                             new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
@@ -265,19 +257,19 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
                 boolean checkEmpty = checkValidation();
                 if (!checkEmpty) {
-                    btnOk.setEnabled(false);
-                    btnCancel.setEnabled(false);
-                    progressBar.setVisibility(View.VISIBLE);
+                    mBtnOk.setEnabled(false);
+                    mBtnCancel.setEnabled(false);
+                    mProgressBar.setVisibility(View.VISIBLE);
                     sendRequestToServer();
-                    MainActivity.btnAddClick = false;
+                    MainActivity.sBtnAddClick = false;
                 }
                 break;
             case R.id.btnAddCancel:
                 dismiss();
-                MainActivity.btnAddClick = false;
+                MainActivity.sBtnAddClick = false;
                 break;
             case R.id.imgClearCurLocation:
-                txtCurLocation.setText("");
+                mTxtCurLocation.setText("");
                 break;
             case R.id.imgClearDesLocation:
                 txtDesLocation.setText("");
@@ -289,23 +281,23 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
     private void sendRequestToServer() {
         try {
-            switch (getWhatBtnClick) {
+            switch (mGetWhatBtnClick) {
                 case "btnFindPeople":
-                    vehicleType = spType.getSelectedItemPosition() + 1;
+                    mVehicleType = mSpType.getSelectedItemPosition() + 1;
                     break;
                 case "btnFindVehicles":
-                    vehicleType = 0;
+                    mVehicleType = 0;
 
             }
 
-            srcLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtCurLocation.getText().toString());
-            final String sourLocation = "{\"lat\":\"" + String.valueOf(srcLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(srcLatLng.longitude) + "\"}";
+            mSrcLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(mTxtCurLocation.getText().toString());
+            final String sourLocation = "{\"lat\":\"" + String.valueOf(mSrcLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(mSrcLatLng.longitude) + "\"}";
 
 
-            desLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtDesLocation.getText().toString());
-            final String desLocation = "{\"lat\":\"" + String.valueOf(desLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(desLatLng.longitude) + "\"}";
+            mDesLatLng = PlaceHelper.getInstance(mContext).getLatLngByName(txtDesLocation.getText().toString());
+            final String desLocation = "{\"lat\":\"" + String.valueOf(mDesLatLng.latitude) + "\",\"lng\":\"" + String.valueOf(mDesLatLng.longitude) + "\"}";
 
-            time = txtTimeStart.getText().toString();
+            mTime = mTxtTimeStart.getText().toString();
             String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
             String deviceToken = FirebaseInstanceId.getInstance().getToken();
 
@@ -318,9 +310,10 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
             String currentTime = simpleDateFormatCurrent.format(calendarCurrent.getTime());
 
             AddRequestAPI addRequestAPI = new AddRequestAPI(this);
-            addRequestAPI.addRequest(userId, sourLocation, desLocation, time, sessionId, deviceId, vehicleType, deviceToken, currentTime);
+            addRequestAPI.addRequest(mUserId, sourLocation, desLocation, mTime, mSessionId, deviceId, mVehicleType,
+                    deviceToken, currentTime);
 
-        } catch (Exception e){
+        } catch (Exception e) {
             Toast.makeText(mContext, "send request to server ", Toast.LENGTH_SHORT).show();
         }
 
@@ -330,22 +323,22 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
         TimePickerDialog.OnTimeSetListener callBack = new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                calendar.set(java.util.Calendar.HOUR_OF_DAY, i);
-                calendar.set(java.util.Calendar.MINUTE, i1);
-                txtTimeStart.setText(sdf1.format(calendar.getTime()));
+                mCalendar.set(java.util.Calendar.HOUR_OF_DAY, i);
+                mCalendar.set(java.util.Calendar.MINUTE, i1);
+                mTxtTimeStart.setText(mSimpleDateFormat.format(mCalendar.getTime()));
             }
         };
         TimePickerDialog timePickerDialog = new TimePickerDialog(
                 mContext,
                 callBack,
-                calendar.get(java.util.Calendar.HOUR_OF_DAY),
-                calendar.get(java.util.Calendar.MINUTE), true
+                mCalendar.get(java.util.Calendar.HOUR_OF_DAY),
+                mCalendar.get(java.util.Calendar.MINUTE), true
         );
         timePickerDialog.show();
     }
 
     private boolean checkValidation() {
-        String curLocate = txtCurLocation.getText().toString();
+        String curLocate = mTxtCurLocation.getText().toString();
         String desLocate = txtDesLocation.getText().toString();
         boolean checkNull = false;
         if (curLocate.equals("")) {
@@ -360,13 +353,13 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        txtCurLocation.setEnabled(true);
+        mTxtCurLocation.setEnabled(true);
         txtDesLocation.setEnabled(true);
         Place place = PlaceAutocomplete.getPlace(getActivity(), data);
         if (requestCode == CUR_PLACE_AUTOCOMPLETE_REQUEST_CODE) {
             //    if (resultCode == 1) {
-            if (txtCurLocation != null && place != null) {
-                txtCurLocation.setText(place.getAddress());
+            if (mTxtCurLocation != null && place != null) {
+                mTxtCurLocation.setText(place.getAddress());
             }
 
         } else if (requestCode == DES_PLACE_AUTOCOMPLETE_REQUEST_CODE) {
@@ -384,26 +377,26 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
 
     @Override
     public void addRequestSuccess(RequestResult requestResult) {
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
         List<ActiveUser> listActive = new ArrayList<>();
         Log.d("registerRequest", "registerRequest success");
         if (requestResult.getActiveUsers() != null && requestResult.getActiveUsers().size() > 0) {
             listActive = requestResult.getActiveUsers();
         } else {
             String vType = "";
-            if (vehicleType == 0) {
+            if (mVehicleType == 0) {
                 vType = "chia sẻ xe";
             } else {
                 vType = "cần xe chia sẻ";
             }
             Toast.makeText(mContext, "Không có người nào đang " + vType, Toast.LENGTH_SHORT).show();
         }
-        mListener.addRequestSuccess(srcLatLng, desLatLng, time, vehicleType, listActive);
+        mListener.addRequestSuccess(mSrcLatLng, mDesLatLng, mTime, mVehicleType, listActive);
 
         if (isAdded()) {
             dismiss();
         }
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -414,19 +407,19 @@ public class AddRequestFragment extends DialogFragment implements View.OnClickLi
                 break;
             default:
                 Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
-                btnOk.setEnabled(true);
-                btnCancel.setEnabled(true);
+                mBtnOk.setEnabled(true);
+                mBtnCancel.setEnabled(true);
                 break;
         }
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void addRequestFailure() {
-        progressBar.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.GONE);
         if (isAdded()) {
-            btnOk.setEnabled(true);
-            btnCancel.setEnabled(true);
+            mBtnOk.setEnabled(true);
+            mBtnCancel.setEnabled(true);
             Toast.makeText(mContext, getString(R.string.add_request_fail), Toast.LENGTH_SHORT).show();
         }
     }

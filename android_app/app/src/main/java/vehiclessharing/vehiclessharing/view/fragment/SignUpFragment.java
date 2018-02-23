@@ -26,22 +26,14 @@ import vehiclessharing.vehiclessharing.viewscustom.CustomToast;
 
 public class SignUpFragment extends Fragment implements View.OnClickListener, SignUpAPI.SignUpInterface {
 
-
     private ProgressDialog mProgress;
     private Drawable mDrawable;
-
-    private View view;
-    private EditText txtFullName;
-    private EditText txtPhone;
-    private EditText txtPassword;
-    private EditText txtConfirmPassword;
-    private RadioButton rdMale, rdFemale;
-    private TextView login;
-    private Button btnSignup;
-    private RestManager mManager;
+    private View mView;
+    private EditText mTxtFullName, mTxtPhone,mTxtPassword, mTxtConfirmPassword;
+    private RadioButton mBtnMale, mBtnFemale;
+    private TextView mLogin;
+    private Button mBtnSignup;
     private Activity mActivity;
-
-    DatabaseHelper db;
 
     private Validation validation = null;
 
@@ -52,10 +44,10 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Si
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_signup, container, false);
+        mView = inflater.inflate(R.layout.fragment_signup, container, false);
         addControls();
         addEvents();
-        return view;
+        return mView;
     }
 
     private void addControls() {
@@ -69,71 +61,71 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Si
         mProgress.setCanceledOnTouchOutside(false);
         //[End] Setup for progress
 
-        txtFullName = (EditText) view.findViewById(R.id.txtFullName);
-        rdMale = (RadioButton) view.findViewById(R.id.rdMale);
-        rdFemale = (RadioButton) view.findViewById(R.id.rdFemale);
-        txtPhone = (EditText) view.findViewById(R.id.txtPhone);
-        txtPassword = (EditText) view.findViewById(R.id.txtPassword);
-        txtConfirmPassword = (EditText) view.findViewById(R.id.txtConfirmPassword);
-        btnSignup = (Button) view.findViewById(R.id.btnSignup);
-        login = (TextView) view.findViewById(R.id.already_user);
+        mTxtFullName = (EditText) mView.findViewById(R.id.txtFullName);
+        mBtnMale = (RadioButton) mView.findViewById(R.id.rdMale);
+        mBtnFemale = (RadioButton) mView.findViewById(R.id.rdFemale);
+        mTxtPhone = (EditText) mView.findViewById(R.id.txtPhone);
+        mTxtPassword = (EditText) mView.findViewById(R.id.txtPassword);
+        mTxtConfirmPassword = (EditText) mView.findViewById(R.id.txtConfirmPassword);
+        mBtnSignup = (Button) mView.findViewById(R.id.btnSignup);
+        mLogin = (TextView) mView.findViewById(R.id.already_user);
         mDrawable = getResources().getDrawable(R.drawable.ic_warning_red_600_24dp);
         mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
     }
 
     private void addEvents() {
-        btnSignup.setOnClickListener(this);
-        login.setOnClickListener(this);
-        txtPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        mBtnSignup.setOnClickListener(this);
+        mLogin.setOnClickListener(this);
+        mTxtPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if (Validation.isEmpty(txtFullName.getText().toString()))
-                    txtFullName.setError("Fullname is required", mDrawable);
-                if (Validation.isEmpty(txtPhone.getText().toString())) {
-                    txtPhone.setError("Phone is required", mDrawable);
+                if (Validation.isEmpty(mTxtFullName.getText().toString()))
+                    mTxtFullName.setError("Fullname is required", mDrawable);
+                if (Validation.isEmpty(mTxtPhone.getText().toString())) {
+                    mTxtPhone.setError("Phone is required", mDrawable);
                 } else {
-                    validation = Validation.checkValidPhone(txtPhone.getText().toString());
+                    validation = Validation.checkValidPhone(mTxtPhone.getText().toString());
                     if (!validation.getIsValid()) {
-                        txtPhone.setError(validation.getMessageValid(), mDrawable);
+                        mTxtPhone.setError(validation.getMessageValid(), mDrawable);
                     }
                 }
             }
         });
 
-        txtPhone.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        mTxtPhone.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if (Validation.isEmpty(txtFullName.getText().toString()))
-                    txtFullName.setError("Fullname is required", mDrawable);
+                if (Validation.isEmpty(mTxtFullName.getText().toString()))
+                    mTxtFullName.setError("Fullname is required", mDrawable);
             }
         });
 
-        txtConfirmPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        mTxtConfirmPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if (Validation.isEmpty(txtFullName.getText().toString()))
-                    txtFullName.setError("Fullname is required", mDrawable);
-                if (Validation.isEmpty(txtPhone.getText().toString())) {
-                    txtPhone.setError("Phone is required", mDrawable);
+                if (Validation.isEmpty(mTxtFullName.getText().toString()))
+                    mTxtFullName.setError("Fullname is required", mDrawable);
+                if (Validation.isEmpty(mTxtPhone.getText().toString())) {
+                    mTxtPhone.setError("Phone is required", mDrawable);
                 } else {
-                    validation = Validation.checkValidPhone(txtPhone.getText().toString());
+                    validation = Validation.checkValidPhone(mTxtPhone.getText().toString());
                     if (!validation.getIsValid()) {
-                        txtPhone.setError(validation.getMessageValid(), mDrawable);
+                        mTxtPhone.setError(validation.getMessageValid(), mDrawable);
                     }
                 }
-                if (Validation.isEmpty(txtPassword.getText().toString())) {
-                    txtPassword.setError("Password is required", mDrawable);
+                if (Validation.isEmpty(mTxtPassword.getText().toString())) {
+                    mTxtPassword.setError("Password is required", mDrawable);
                 } else {
-                    validation = Validation.checkValidPassword(txtPassword.getText().toString());
+                    validation = Validation.checkValidPassword(mTxtPassword.getText().toString());
                     if (!validation.getIsValid()) {
-                        txtPassword.setError(validation.getMessageValid(), mDrawable);
+                        mTxtPassword.setError(validation.getMessageValid(), mDrawable);
                     }
                 }
             }
         });
 
-        rdFemale.setOnClickListener(this);
-        rdMale.setOnClickListener(this);
+        mBtnFemale.setOnClickListener(this);
+        mBtnMale.setOnClickListener(this);
     }
 
 
@@ -151,13 +143,13 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Si
 
                 break;
             case R.id.rdFemale:
-                rdMale.setChecked(false);
-                rdFemale.setChecked(true);
+                mBtnMale.setChecked(false);
+                mBtnFemale.setChecked(true);
                 break;
 
             case R.id.rdMale:
-                rdMale.setChecked(true);
-                rdFemale.setChecked(false);
+                mBtnMale.setChecked(true);
+                mBtnFemale.setChecked(false);
                 break;
         }
 
@@ -165,41 +157,41 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Si
 
     private void checkValidation() {
 
-        String fullName = txtFullName.getText().toString();
-        String mobilePhone = txtPhone.getText().toString();
-        String password = txtPassword.getText().toString();
-        String confirmPassword = txtConfirmPassword.getText().toString();
+        String fullName = mTxtFullName.getText().toString();
+        String mobilePhone = mTxtPhone.getText().toString();
+        String password = mTxtPassword.getText().toString();
+        String confirmPassword = mTxtConfirmPassword.getText().toString();
         Validation validation;
 
         if (Validation.isEmpty(fullName)
-                || (!rdMale.isChecked() && !rdFemale.isChecked())
+                || (!mBtnMale.isChecked() && !mBtnFemale.isChecked())
                 || Validation.isEmpty(mobilePhone)
                 || Validation.isEmpty(password)
                 || Validation.isEmpty(confirmPassword))
 
-            new CustomToast().showToast(getActivity(), view,
+            new CustomToast().showToast(getActivity(), mView,
                     "All fields are required.");
         else {
             validation = Validation.checkValidPhone(mobilePhone);
             if (!validation.getIsValid())
-                new CustomToast().showToast(getActivity(), view,
+                new CustomToast().showToast(getActivity(), mView,
                         validation.getMessageValid());
             else {
                 validation = Validation.checkValidPassword(password);
                 if (!validation.getIsValid())
-                    new CustomToast().showToast(getActivity(), view,
+                    new CustomToast().showToast(getActivity(), mView,
                             validation.getMessageValid());
                 else {
                     validation = Validation.checkValidConfirmPassword(password, confirmPassword);
                     if (!validation.getIsValid())
-                        new CustomToast().showToast(getActivity(), view,
+                        new CustomToast().showToast(getActivity(), mView,
                                 validation.getMessageValid());
                     else {
                         int gender = 0;
-                        if (rdMale.isChecked()) {
+                        if (mBtnMale.isChecked()) {
                             gender = 0;
                         }
-                        if (rdFemale.isChecked()) {
+                        if (mBtnFemale.isChecked()) {
                             gender = 1;
                         }
 
@@ -226,7 +218,7 @@ public class SignUpFragment extends Fragment implements View.OnClickListener, Si
 
     @Override
     public void signUpUnsuccess() {
-        new CustomToast().showToast(getActivity(), view,
+        new CustomToast().showToast(getActivity(), mView,
                 getResources().getString(R.string.user_exists));
         mProgress.dismiss();
     }

@@ -26,10 +26,10 @@ import vehiclessharing.vehiclessharing.view.fragment.HistoryHikerFragment;
 public class AnotherUserProfileActivity extends AppCompatActivity implements UserInfoAPI.GetInfoUserCallback {
 
     public static final String USER_ID = "user_id";
-    private android.support.v7.widget.Toolbar toolbar;
-    private CircleImageView imgAvatar;
-    private ImageView imgGender;
-    private TextView txtName, txtAge, txtPhone;
+    private android.support.v7.widget.Toolbar mToolbar;
+    private CircleImageView mAvatar;
+    private ImageView mGender;
+    private TextView mTxtName, mTxtAge, mTxtPhone;
     private int anotherUserId;
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -55,11 +55,11 @@ public class AnotherUserProfileActivity extends AppCompatActivity implements Use
 
     private void addControls() {
         configToolbar();
-        imgAvatar = findViewById(R.id.imgAvatar);
-        txtName = findViewById(R.id.txtUserName);
-        txtPhone = findViewById(R.id.txtPhone);
-        txtAge = findViewById(R.id.txtAge);
-        imgGender = findViewById(R.id.gender);
+        mAvatar = findViewById(R.id.imgAvatar);
+        mTxtName = findViewById(R.id.txtUserName);
+        mTxtPhone = findViewById(R.id.txtPhone);
+        mTxtAge = findViewById(R.id.txtAge);
+        mGender = findViewById(R.id.gender);
 
         viewPager = findViewById(R.id.viewpager);
         tabLayout = findViewById(R.id.sliding_tabs);
@@ -73,10 +73,10 @@ public class AnotherUserProfileActivity extends AppCompatActivity implements Use
     }
 
     private void configToolbar() {
-        toolbar = findViewById(R.id.toolbar_General);
-        toolbar.setTitle(getString(R.string.user_info));
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
-        setSupportActionBar(toolbar);
+        mToolbar = findViewById(R.id.toolbar_General);
+        mToolbar.setTitle(getString(R.string.user_info));
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp));
@@ -85,7 +85,7 @@ public class AnotherUserProfileActivity extends AppCompatActivity implements Use
             }
         }
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d("Back button", "Back button click");
@@ -98,18 +98,19 @@ public class AnotherUserProfileActivity extends AppCompatActivity implements Use
     @Override
     public void getInfoUserSuccess(InfomationUser userInfo) {
         if (userInfo.getUserInfo().getAvatarLink() != null && !userInfo.getUserInfo().getAvatarLink().equals("")) {
-            Glide.with(this).load(userInfo.getUserInfo().getAvatarLink()).placeholder(getResources().getDrawable(R.drawable.temp)).centerCrop().fitCenter().into(imgAvatar);
+            Glide.with(this).load(userInfo.getUserInfo().getAvatarLink()).
+                    placeholder(getResources().getDrawable(R.drawable.temp)).centerCrop().fitCenter().into(mAvatar);
         }
-        txtName.setText(userInfo.getUserInfo().getName());
-        txtPhone.setText(userInfo.getUserInfo().getPhone());
+        mTxtName.setText(userInfo.getUserInfo().getName());
+        mTxtPhone.setText(userInfo.getUserInfo().getPhone());
 
         if (userInfo.getUserInfo().getBirthday() != null && !userInfo.getUserInfo().getBirthday().equals("")) {
-            txtAge.setText(caculateAge(userInfo.getUserInfo().getBirthday()));
+            mTxtAge.setText(caculateAge(userInfo.getUserInfo().getBirthday()));
         }
         if (userInfo.getUserInfo().getGender() == 0) {
-            imgGender.setImageResource(R.drawable.gender_male);
+            mGender.setImageResource(R.drawable.gender_male);
         } else {
-            imgGender.setImageResource(R.drawable.gender_female);
+            mGender.setImageResource(R.drawable.gender_female);
         }
     }
 

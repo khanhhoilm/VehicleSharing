@@ -44,14 +44,14 @@ import vehiclessharing.vehiclessharing.model.ActiveUser;
 
 public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
     private Activity mActivity;
-    private GoogleMap googleMap;
-    private ActiveUser activeUser;
-    private int positionInList;
+    private GoogleMap mGoogleMap;
+    private ActiveUser mActiveUser;
+    private int mPositionInList;
 
     public CustomMarkerAsync(Activity mActivity, int position) {
         this.mActivity = mActivity;
-        googleMap = MainActivity.mGoogleMap;
-        positionInList = position;
+        mGoogleMap = MainActivity.mGoogleMap;
+        mPositionInList = position;
     }
 
     @Override
@@ -59,10 +59,10 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
         Bitmap bitmap = null;
 
         try {
-            activeUser = params[0];
+            mActiveUser = params[0];
 
-            if (activeUser.getUserInfo().getAvatarLink() != null) {
-                bitmap = BitmapFactory.decodeStream(fetch(activeUser.getUserInfo().getAvatarLink()));
+            if (mActiveUser.getUserInfo().getAvatarLink() != null) {
+                bitmap = BitmapFactory.decodeStream(fetch(mActiveUser.getUserInfo().getAvatarLink()));
             } else {
                 bitmap = BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.temp);
             }
@@ -84,15 +84,17 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
         Marker customMarker = null;
         //object of user need add marker graber or needer
 
-        if (activeUser != null && activeUser.getRequestInfo() != null && activeUser.getUserInfo() != null) {
-                bitmap1 = getCustomMarkerView(bitmap,activeUser.getUserInfo().getAvatarLink(), activeUser.getRequestInfo().getVehicleType(), activeUser.getUserInfo().getIsFavorite());
-                source = new LatLng(Double.parseDouble(activeUser.getRequestInfo().getSourceLocation().getLat()), Double.parseDouble(activeUser.getRequestInfo().getSourceLocation().getLng()));
-                customMarker = googleMap.addMarker(new MarkerOptions().position(source).title(activeUser.getUserInfo().getName())
+        if (mActiveUser != null && mActiveUser.getRequestInfo() != null && mActiveUser.getUserInfo() != null) {
+                bitmap1 = getCustomMarkerView(bitmap,mActiveUser.getUserInfo().getAvatarLink(),
+                        mActiveUser.getRequestInfo().getVehicleType(), mActiveUser.getUserInfo().getIsFavorite());
+                source = new LatLng(Double.parseDouble(mActiveUser.getRequestInfo().getSourceLocation().getLat()),
+                        Double.parseDouble(mActiveUser.getRequestInfo().getSourceLocation().getLng()));
+                customMarker = mGoogleMap.addMarker(new MarkerOptions().position(source).title(mActiveUser.getUserInfo().getName())
                         .icon(BitmapDescriptorFactory.fromBitmap(bitmap1)));
                 customMarker.setTag("another");
-                MainActivity.markerHashMap.put(activeUser, customMarker);
-                MainActivity.userHashMap.put(customMarker, activeUser);
-                MainActivity.numberMarkerInHashMap.put(positionInList, customMarker);
+                MainActivity.markerHashMap.put(mActiveUser, customMarker);
+                MainActivity.userHashMap.put(customMarker, mActiveUser);
+                MainActivity.numberMarkerInHashMap.put(mPositionInList, customMarker);
         }
 
     }
@@ -103,13 +105,15 @@ public class CustomMarkerAsync extends AsyncTask<ActiveUser, Void, Bitmap> {
      * @return
      */
     private Bitmap getCustomMarkerView(Bitmap bitmap,String avatarLink, int vehicleType, int isFavorite) {
-        View customMarkerView = ((LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.custom_marker, null);
+        View customMarkerView = ((LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                .inflate(R.layout.custom_marker, null);
         CircleImageView imgAvatar = customMarkerView.findViewById(R.id.profile_image);
         ImageView imgVehicleType = (ImageView) customMarkerView.findViewById(R.id.imgVehicleType);
         ImageView imgFavorite = customMarkerView.findViewById(R.id.imgFavorite);
 
         if (avatarLink != null&&!avatarLink.equals("")) {
-            Glide.with(mActivity).load(avatarLink).placeholder(mActivity.getResources().getDrawable(R.drawable.temp)).centerCrop().into(imgAvatar);
+            Glide.with(mActivity).load(avatarLink).placeholder(mActivity.getResources().getDrawable(R.drawable.temp))
+                    .centerCrop().into(imgAvatar);
             imgAvatar.setImageBitmap(bitmap);
         }else {
             imgAvatar.setImageResource(R.drawable.temp);

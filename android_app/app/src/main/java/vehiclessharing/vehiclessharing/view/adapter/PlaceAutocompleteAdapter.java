@@ -47,6 +47,7 @@ public class PlaceAutocompleteAdapter
 
     private static final String TAG = "PlaceAutocompleteAdapter";
     private static final CharacterStyle STYLE_BOLD = new StyleSpan(Typeface.BOLD);
+
     private ArrayList<AutocompletePrediction> mResultList;
     private GoogleApiClient mGoogleApiClient;
     private LatLngBounds mBounds;

@@ -8,16 +8,6 @@ import com.google.gson.annotations.SerializedName;
  */
 
 public class ReceiveRequest {
-    /*
-    "type": "send_request",
-                "user_id": 1,
-                "user_name": "Hội Khánh",
-                "start_location": "{\"lat\":\"10.7986714\",\"lng\":\"1063.6854578\"}",
-                "end_location": "{\"lat\":\"10.7986714\",\"lng\":\"106.6854578\"}",
-                "avatar_link": null,
-                "start_time": "08:08:00",
-                "vehicle_type": 0,
-                "note": "cdall"*/
 
     @SerializedName("avatar_link")
     @Expose

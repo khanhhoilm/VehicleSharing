@@ -11,8 +11,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -48,8 +46,8 @@ import co.vehiclessharing.R;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
-import vehiclessharing.vehiclessharing.api.UserInfoAPI;
 import vehiclessharing.vehiclessharing.api.UpdateImageAPI;
+import vehiclessharing.vehiclessharing.api.UserInfoAPI;
 import vehiclessharing.vehiclessharing.asynctask.GetAvatar;
 import vehiclessharing.vehiclessharing.authentication.SessionManager;
 import vehiclessharing.vehiclessharing.constant.Utils;
@@ -59,38 +57,33 @@ import vehiclessharing.vehiclessharing.model.User;
 import vehiclessharing.vehiclessharing.permission.CheckCamera;
 
 public class EditProfileActivity extends AppCompatActivity implements View.OnClickListener,
-        TextWatcher, UpdateImageAPI.UpdateImageCallback, UserInfoAPI.GetInfoUserCallback,GetAvatar.GetBitMapAvatarInterface {
-
-    private ImageView avatarUser;
-    private EditText txtFullName;
-    private EditText txtPhoneNumber;
-    private RadioButton rdMale;
-    private RadioButton rdFemale;
-    private RadioGroup groupGender;
-    private EditText edEmail;
-
-    public TextView txtBirthday;
-    private EditText edAddress;
-    private Button btnSave;
-    private Toolbar toolbar;
+        TextWatcher, UpdateImageAPI.UpdateImageCallback, UserInfoAPI.GetInfoUserCallback, GetAvatar.GetBitMapAvatarInterface {
 
     private static int REQUEST_IMAGE_SDCARD = 100;//Value request activity pick image in SDcard
     private static int REQUEST_IMAGE_CAMERA = 200;//Value request activity take image using CAMERA
     private static int MY_CAMERA_REQUEST_CODE = 69;//Value request permission Camera
     public static int REQUEST_CHOOSE_ADDRESS = 1;
 
+    private ImageView mAvatarUser;
+    private EditText mTxtFullName, mTxtPhoneNumber, mTxtEmail, mTxtAddress;
+    private RadioButton mBtnMale, mBtnFemale;
+    private RadioGroup mGroupGender;
 
-    private java.util.Calendar calendar = java.util.Calendar.getInstance();
-    private java.text.SimpleDateFormat sdf2 = new java.text.SimpleDateFormat("dd-MM-yyyy");
+    public TextView mTxtBirthday;
+    private Button mBtnSave;
+    private Toolbar mToolbar;
+
+    private java.util.Calendar mCalendar;
+    private java.text.SimpleDateFormat mSdf;
 
     private DatabaseHelper mDatabase;//Instance reference Realtime Database Firebase
-    private static Drawable mDrawable;//Icon edittext when text invalid
-    private User userInfo;
+    private Drawable mDrawable;//Icon edittext when text invalid
+    private User mUserInfo;
 
-    private String apiToken = "";
+    private String mApiToken = "";
 
-    private UpdateImageAPI updateImageAPI;
-    private String avatarLink = "";
+    private UpdateImageAPI mUpdateImageAPI;
+    private String mAvatarLink = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +91,8 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         setContentView(R.layout.activity_edit_profile);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//DO NOT ROTATE the screen even if the user is shaking his phone like mad
 
+        mCalendar = java.util.Calendar.getInstance();
+        mSdf = new java.text.SimpleDateFormat("dd-MM-yyyy");
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -113,50 +108,48 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
      * Set content to all fields
      */
     private void setContentUI() {
-        txtFullName.setText(userInfo.getName());
-        txtPhoneNumber.setText(userInfo.getPhone());
-        if (userInfo.getBirthday() != null && !userInfo.equals("")) {
-            txtBirthday.setText(userInfo.getBirthday());
+        mTxtFullName.setText(mUserInfo.getName());
+        mTxtPhoneNumber.setText(mUserInfo.getPhone());
+        if (mUserInfo.getBirthday() != null && !mUserInfo.equals("")) {
+            mTxtBirthday.setText(mUserInfo.getBirthday());
         }
-        if (userInfo.getAddress() != null && !userInfo.equals("")) {
-            edAddress.setText(userInfo.getAddress());
+        if (mUserInfo.getAddress() != null && !mUserInfo.equals("")) {
+            mTxtAddress.setText(mUserInfo.getAddress());
         }
 
-        if (userInfo.getGender() != null && userInfo.getGender() == 0) {
-            rdMale.setChecked(true);
+        if (mUserInfo.getGender() != null && mUserInfo.getGender() == 0) {
+            mBtnMale.setChecked(true);
         } else {
-            rdFemale.setChecked(true);
+            mBtnFemale.setChecked(true);
         }
     }
 
     private void addEvents() {
-        rdFemale.setOnClickListener(this);
-        rdMale.setOnClickListener(this);
-        avatarUser.setOnClickListener(this);
-        btnSave.setOnClickListener(this);
-        txtFullName.addTextChangedListener(this);
-        edEmail.setOnClickListener(this);
-        txtPhoneNumber.addTextChangedListener(this);
-        rdMale.setOnClickListener(this);
-        rdFemale.setOnClickListener(this);
-        txtBirthday.setOnClickListener(this);
-        edAddress.setOnClickListener(this);
+        mBtnFemale.setOnClickListener(this);
+        mBtnMale.setOnClickListener(this);
+        mAvatarUser.setOnClickListener(this);
+        mBtnSave.setOnClickListener(this);
+        mTxtFullName.addTextChangedListener(this);
+        mTxtEmail.setOnClickListener(this);
+        mTxtPhoneNumber.addTextChangedListener(this);
+        mTxtBirthday.setOnClickListener(this);
+        mTxtAddress.setOnClickListener(this);
 
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Log.d("Back button", "Back button click");
                 onBackPressed();
             }
         });
-        updateImageAPI = new UpdateImageAPI(this);
+        mUpdateImageAPI = new UpdateImageAPI(this);
     }
 
     private void addControlls() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar_General);
-        toolbar.setTitle(getString(R.string.edit_profile));
-        toolbar.setTitleTextColor(getResources().getColor(R.color.white));
-        setSupportActionBar(toolbar);
+        mToolbar = (Toolbar) findViewById(R.id.toolbar_General);
+        mToolbar.setTitle(getString(R.string.edit_profile));
+        mToolbar.setTitleTextColor(getResources().getColor(R.color.white));
+        setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeAsUpIndicator(getResources().getDrawable(R.drawable.ic_arrow_back_white_24dp));
@@ -165,17 +158,17 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
             }
         }
 
-        avatarUser = (ImageView) findViewById(R.id.img_user);
-        txtFullName = (EditText) findViewById(R.id.ed_full_name);
-        txtPhoneNumber = (EditText) findViewById(R.id.ed_phone_number);
-        edEmail = findViewById(R.id.edEmail);
-        edAddress = (EditText) findViewById(R.id.ed_address);
-        txtBirthday = (TextView) findViewById(R.id.txt_birthday);
+        mAvatarUser = (ImageView) findViewById(R.id.img_user);
+        mTxtFullName = (EditText) findViewById(R.id.ed_full_name);
+        mTxtPhoneNumber = (EditText) findViewById(R.id.ed_phone_number);
+        mTxtEmail = findViewById(R.id.edEmail);
+        mTxtAddress = (EditText) findViewById(R.id.ed_address);
+        mTxtBirthday = (TextView) findViewById(R.id.txt_birthday);
 
-        groupGender = (RadioGroup) findViewById(R.id.rdgGender);
-        rdMale = (RadioButton) findViewById(R.id.rd_male);
-        rdFemale = (RadioButton) findViewById(R.id.rd_female);
-        btnSave = (Button) findViewById(R.id.btn_save);
+        mGroupGender = (RadioGroup) findViewById(R.id.rdgGender);
+        mBtnMale = (RadioButton) findViewById(R.id.rd_male);
+        mBtnFemale = (RadioButton) findViewById(R.id.rd_female);
+        mBtnSave = (Button) findViewById(R.id.btn_save);
 
         mDrawable = getResources().getDrawable(R.drawable.ic_warning_red_600_24dp);
         mDrawable.setBounds(0, 0, mDrawable.getIntrinsicWidth(), mDrawable.getIntrinsicHeight());
@@ -187,28 +180,28 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     private void loadInfoUser() {
         SharedPreferences sharedPreferences = getSharedPreferences(SessionManager.PREF_NAME_LOGIN, MODE_PRIVATE);
         int userId = sharedPreferences.getInt(SessionManager.USER_ID, 0);
-        apiToken = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
-        userInfo = mDatabase.getUser(userId);
-        UserInfoAPI userInfoAPI=new UserInfoAPI(this);
-       userInfoAPI.getMyInfo(apiToken);
+        mApiToken = sharedPreferences.getString(SessionManager.KEY_SESSION, "");
+        mUserInfo = mDatabase.getUser(userId);
+        UserInfoAPI userInfoAPI = new UserInfoAPI(this);
+        userInfoAPI.getMyInfo(mApiToken);
     }
 
     private void showDatePicker() {
         DatePickerDialog.OnDateSetListener callBack = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                //Hiển thị sự thay đổi theo người dùng
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                calendar.set(Calendar.MONTH, month);
-                calendar.set(Calendar.YEAR, year);
-                txtBirthday.setText(sdf2.format(calendar.getTime()));
+                mCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                mCalendar.set(Calendar.MONTH, month);
+                mCalendar.set(Calendar.YEAR, year);
+                mTxtBirthday.setText(mSdf.format(mCalendar.getTime()));
                 displayButtonUpdate(true);
 
             }
         };
 
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this, callBack, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this, callBack, mCalendar.get(Calendar.YEAR),
+                mCalendar.get(Calendar.MONTH), mCalendar.get(Calendar.DAY_OF_MONTH));
         //nếu đối số cuối =true thì định dạng 24h, =false định dạng 12h
         datePickerDialog.show();
     }
@@ -229,7 +222,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     /**
      * Take picture using Camera
      */
-   // @RequiresApi(api = Build.VERSION_CODES.M)
+    // @RequiresApi(api = Build.VERSION_CODES.M)
     private void callIntentTakePicture() {
         if (CheckCamera.checkCamera(this, this)) {
             Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
@@ -256,19 +249,19 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
      */
     public void displayButtonUpdate(boolean isShow) {
         if (isShow) {
-            btnSave.setAlpha(1);
-            btnSave.setEnabled(true);
+            mBtnSave.setAlpha(1);
+            mBtnSave.setEnabled(true);
         } else {
-            btnSave.setAlpha(0.2f);
-            btnSave.setEnabled(false);
+            mBtnSave.setAlpha(0.2f);
+            mBtnSave.setEnabled(false);
         }
     }
 
 
     private void uploadFile(Uri fileUri) {
-        avatarUser.setImageURI(fileUri);
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) avatarUser.getDrawable();
-        userInfo.setPicture(bitmapDrawable.getBitmap());
+        mAvatarUser.setImageURI(fileUri);
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) mAvatarUser.getDrawable();
+        mUserInfo.setPicture(bitmapDrawable.getBitmap());
         Log.d("Update Image", "path Image: " + fileUri.toString());
 
         File file = new File(getRealPathFromUri(this, fileUri));
@@ -276,7 +269,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
         MultipartBody.Part body = MultipartBody.Part.createFormData("sampleFile", file.getName(), reqFile);
         RequestBody name = RequestBody.create(MediaType.parse("text/plain"), "upload_test");
 
-        updateImageAPI.getURLImage(body);
+        mUpdateImageAPI.getURLImage(body);
 
     }
 
@@ -293,18 +286,6 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 cursor.close();
             }
         }
-    }
-
-    /**
-     * Internet is avaibalility
-     *
-     * @return true if can access internet
-     */
-    public boolean isOnline() {
-        ConnectivityManager cm =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     /**
@@ -353,19 +334,19 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 Uri targetUri = data.getData();
                 try {
                     uploadFile(targetUri);
-              } catch (Exception e) {
+                } catch (Exception e) {
                     Log.e(Utils.TAG_ERROR_SELECT_IMAGE, String.valueOf(e.getMessage()));
                 }
-           }
+            }
         }
     }
 
     private void getNewAddress(Intent data) {
         Place place = PlaceAutocomplete.getPlace(this, data);
 
-        if (edAddress != null && place != null) {
-            edAddress.setText(place.getAddress());
-            userInfo.setAddress((String) place.getAddress());
+        if (mTxtAddress != null && place != null) {
+            mTxtAddress.setText(place.getAddress());
+            mUserInfo.setAddress((String) place.getAddress());
             displayButtonUpdate(true);
         }
 
@@ -390,8 +371,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
                 selectImage();
                 break;
             }
-            case R.id.edEmail:
-            {
+            case R.id.edEmail: {
                 displayButtonUpdate(true);
                 break;
             }
@@ -417,19 +397,20 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     private void updateProfileUser() {
 
-        int radId = groupGender.getCheckedRadioButtonId();
+        int radId = mGroupGender.getCheckedRadioButtonId();
         if (radId == R.id.rd_male) {
-            userInfo.setGender(0);
+            mUserInfo.setGender(0);
         } else {
-            userInfo.setGender(1);
+            mUserInfo.setGender(1);
         }
-        userInfo.setName(txtFullName.getText().toString());
+        mUserInfo.setName(mTxtFullName.getText().toString());
 
-        userInfo.setBirthday(txtBirthday.getText().toString());
+        mUserInfo.setBirthday(mTxtBirthday.getText().toString());
         String email = "";
-        email = edEmail.getText().toString();
+        email = mTxtEmail.getText().toString();
 
-        updateImageAPI.updateInfoUser(apiToken, userInfo.getName(), email,avatarLink, userInfo.getGender(), userInfo.getAddress(), userInfo.getBirthday());
+        mUpdateImageAPI.updateInfoUser(mApiToken, mUserInfo.getName(), email, mAvatarLink, mUserInfo.getGender(),
+                mUserInfo.getAddress(), mUserInfo.getBirthday());
     }
 
 
@@ -450,7 +431,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void getURLImageSuccess(String url) {
-        avatarLink = url;
+        mAvatarLink = url;
         displayButtonUpdate(true);
     }
 
@@ -472,7 +453,7 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void updateInfoUserSuccess() {
         Toast.makeText(EditProfileActivity.this, getResources().getString(R.string.update_info_success), Toast.LENGTH_SHORT).show();
-        mDatabase.updateInfoUser(userInfo);
+        mDatabase.updateInfoUser(mUserInfo);
         finish();
     }
 
@@ -485,17 +466,17 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
     public void getInfoUserSuccess(InfomationUser userInfo) {
         if (userInfo.getUserInfo().getAvatarLink() != null && !userInfo.getUserInfo().getAvatarLink().equals("")) {
             Glide.with(this).load(userInfo.getUserInfo().getAvatarLink()).placeholder(getResources().getDrawable(R.drawable.temp))
-                    .centerCrop().into(avatarUser);
-            new GetAvatar(this,this).execute(userInfo.getUserInfo().getAvatarLink());
+                    .centerCrop().into(mAvatarUser);
+            new GetAvatar(this, this).execute(userInfo.getUserInfo().getAvatarLink());
         }
 
         if (userInfo.getUserInfo().getEmail() != null && !userInfo.getUserInfo().getEmail().equals("")) {
-            edEmail.setText(userInfo.getUserInfo().getEmail());
+            mTxtEmail.setText(userInfo.getUserInfo().getEmail());
         }
-        if (userInfo.getUserInfo().getGender()==0){
-            rdMale.setChecked(true);
-        }else {
-            rdFemale.setChecked(true);
+        if (userInfo.getUserInfo().getGender() == 0) {
+            mBtnMale.setChecked(true);
+        } else {
+            mBtnFemale.setChecked(true);
         }
     }
 
@@ -505,8 +486,8 @@ public class EditProfileActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void getBitMapSuccess(Bitmap bitmap) {
-        if(bitmap!=null) {
-            avatarUser.setImageBitmap(bitmap);
+        if (bitmap != null) {
+            mAvatarUser.setImageBitmap(bitmap);
         }
     }
 }

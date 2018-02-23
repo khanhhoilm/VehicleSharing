@@ -6,30 +6,30 @@ import retrofit2.Response;
 import vehiclessharing.vehiclessharing.model.StatusResponse;
 
 public class ConfirmRequestAPI {
-    private RestManager restManager;
-    private ConfirmRequestCallback confirmRequestCallback;
+    private RestManager mRestManager;
+    private ConfirmRequestCallback mConfirmRequestCallback;
 
     public ConfirmRequestAPI(ConfirmRequestCallback confirmRequestCallback) {
-        this.confirmRequestCallback = confirmRequestCallback;
-        restManager=new RestManager();
+        this.mConfirmRequestCallback = confirmRequestCallback;
+        mRestManager=new RestManager();
     }
 
     public void sendConfirmRequest(String apiToken, int senderId, final int confirmId)
     {
-        restManager.getApiService().confirmRequest(apiToken,senderId,confirmId).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().confirmRequest(apiToken,senderId,confirmId).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if(response.isSuccessful()&&response.body().getStatus().getError()==0) {
                     //error=0 is success and 1 is failure
-                    confirmRequestCallback.confirmRequestSuccess(confirmId);
+                    mConfirmRequestCallback.confirmRequestSuccess(confirmId);
                 }else {
-                    confirmRequestCallback.confirmRequestFailure(String.valueOf(response.body().getStatus().getError()),confirmId);
+                    mConfirmRequestCallback.confirmRequestFailure(String.valueOf(response.body().getStatus().getError()),confirmId);
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                confirmRequestCallback.confirmRequestFailure("OnFailure",confirmId);
+                mConfirmRequestCallback.confirmRequestFailure("OnFailure ",confirmId);
             }
         });
     }

@@ -28,7 +28,7 @@ public class HistoryItemAdapter extends
         implements View.OnClickListener {
 
     private Context mContext;
-    private List<JourneyDone> receivePushArrayList;
+    private List<JourneyDone> mReceivePushArrayList;
     private boolean isAnotherUser = false;
 
     public interface OnItemsInCardClicked {
@@ -38,33 +38,33 @@ public class HistoryItemAdapter extends
     private HistoryItemAdapter.OnItemsInCardClicked mCallback;
 
     public HistoryItemAdapter(Context context, boolean anotherUserHistory) {
-        receivePushArrayList = new ArrayList<>();
+        mReceivePushArrayList = new ArrayList<>();
         isAnotherUser = anotherUserHistory;
         this.mContext = context;
     }
 
     public HistoryItemAdapter(Context context) {
-        receivePushArrayList = new ArrayList<>();
+        mReceivePushArrayList = new ArrayList<>();
         this.mContext = context;
     }
 
     @Override
     public int getItemCount() {
-        return receivePushArrayList.size();
+        return mReceivePushArrayList.size();
     }
 
     public void add(List<JourneyDone> journeyDoneArrayList) {
-        receivePushArrayList = journeyDoneArrayList;
+        mReceivePushArrayList = journeyDoneArrayList;
         notifyDataSetChanged();
     }
 
     public void addAItem(JourneyDone journeyDone) {
-        receivePushArrayList.add(journeyDone);
+        mReceivePushArrayList.add(journeyDone);
         notifyDataSetChanged();
     }
 
     public void clear() {
-        receivePushArrayList.clear();
+        mReceivePushArrayList.clear();
         notifyDataSetChanged();
     }
 
@@ -90,7 +90,7 @@ public class HistoryItemAdapter extends
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
 
-        JourneyDone journeyDone = receivePushArrayList.get(position);
+        JourneyDone journeyDone = mReceivePushArrayList.get(position);
 
         try {
             if (viewHolder instanceof CardViewHolder && !isAnotherUser) {
@@ -193,9 +193,10 @@ public class HistoryItemAdapter extends
 
                     txtWhoRating.setText(mContext.getResources().getString(R.string.my_rating));
                     lnSeeRating.setVisibility(View.VISIBLE);
-                    if (receivePushArrayList.get(getAdapterPosition()).getUserAction() != null) {
-                        ratingValue.setRating(Float.parseFloat(String.valueOf(receivePushArrayList.get(getAdapterPosition()).getUserAction().getRatingValue())));
-                        txtComment.setText(receivePushArrayList.get(getAdapterPosition()).getUserAction().getComment());
+                    if (mReceivePushArrayList.get(getAdapterPosition()).getUserAction() != null) {
+                        ratingValue.setRating(Float.parseFloat(String.valueOf(mReceivePushArrayList.get(getAdapterPosition())
+                                .getUserAction().getRatingValue())));
+                        txtComment.setText(mReceivePushArrayList.get(getAdapterPosition()).getUserAction().getComment());
                         txtFailure.setVisibility(View.GONE);
                     } else {
                         txtFailure.setVisibility(View.VISIBLE);
@@ -209,9 +210,9 @@ public class HistoryItemAdapter extends
 
                     txtWhoRating.setText(mContext.getResources().getString(R.string.your_rating));
                     lnSeeRating.setVisibility(View.VISIBLE);
-                    if (receivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating() != null) {
-                        ratingValue.setRating(receivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating().getRatingValue());
-                        txtComment.setText(receivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating().getComment());
+                    if (mReceivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating() != null) {
+                        ratingValue.setRating(mReceivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating().getRatingValue());
+                        txtComment.setText(mReceivePushArrayList.get(getAdapterPosition()).getJourney().getPartnerRating().getComment());
                         txtFailure.setVisibility(View.GONE);
                     } else {
                         txtFailure.setVisibility(View.VISIBLE);

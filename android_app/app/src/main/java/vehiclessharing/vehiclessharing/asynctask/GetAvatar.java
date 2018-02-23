@@ -27,13 +27,13 @@ import co.vehiclessharing.R;
 
 public class GetAvatar extends AsyncTask<String, Void, Bitmap> {
     private Activity mActivity;
-    private String avatarLink="";
-    private GetBitMapAvatarInterface avatarInterface;
+    private String mAvatarLink="";
+    private GetBitMapAvatarInterface mAvatarInterface;
 
 
     public GetAvatar(Activity mActivity,GetBitMapAvatarInterface getBitMapAvatarInterface) {
         this.mActivity = mActivity;
-        avatarInterface=getBitMapAvatarInterface;
+        mAvatarInterface=getBitMapAvatarInterface;
 
 
     }
@@ -43,10 +43,10 @@ public class GetAvatar extends AsyncTask<String, Void, Bitmap> {
          Bitmap bitmap = null;
 
         try {
-            avatarLink = params[0];
+            mAvatarLink = params[0];
 
-            if (avatarLink != null &&!avatarLink.equals("")) {
-                bitmap = BitmapFactory.decodeStream(fetch(avatarLink));
+            if (mAvatarLink != null &&!mAvatarLink.equals("")) {
+                bitmap = BitmapFactory.decodeStream(fetch(mAvatarLink));
             } else {
                 bitmap = BitmapFactory.decodeResource(mActivity.getResources(), R.drawable.temp);
             }
@@ -62,7 +62,7 @@ public class GetAvatar extends AsyncTask<String, Void, Bitmap> {
         if(android.os.Debug.isDebuggerConnected())
             android.os.Debug.waitForDebugger();
             if(bitmap!=null) {
-                avatarInterface.getBitMapSuccess(bitmap);
+                mAvatarInterface.getBitMapSuccess(bitmap);
             }
     }
 

@@ -32,25 +32,19 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
     public static String DATA_RECEIVE = "data_about_sender";
     public static String SHARE_PREFER_END_TRIP = "share_prefer_end_trip";
     public static String IS_END_TRIP = "is_end_trip";
-    private SharedPreferences sharedPreferencesScreen;
-    SharedPreferences.Editor editorScreen;
+    private SharedPreferences mSharedPreferencesScreen;
+    SharedPreferences.Editor mEditorScreen;
 
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "From: " + remoteMessage.getFrom());
-        //   JSONObject jsonObject=new JSONObject(data);
-        //  String type=
         sendNotification(remoteMessage);
     }
 
     private void sendNotification(RemoteMessage remoteMessage) {
         String title = "", message = "";
-        Map<String, String> data = remoteMessage.getData();
         String type = "";
-        Random random = new Random();
-        int randomNumber = random.nextInt(9999 - 1000) + 1000;
-
         Intent intent = new Intent(this, MainActivity.class);
 
         String jsonReceive = "";
@@ -66,7 +60,7 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                 if (jsonObject.has("status")) {
                     status = (String) jsonObject.get("status");
                 }
-                sharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
+                mSharedPreferencesScreen = getSharedPreferences(MainActivity.SCREEN_AFTER_BACK, MODE_PRIVATE);
 
 
                 switch (type) {
@@ -82,9 +76,9 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                             intent.putExtra(DATA_RECEIVE, jsonReceive);
                             message = "Yêu cầu của bạn đã được chấp nhận";
                         } else {
-                            editorScreen = sharedPreferencesScreen.edit();
-                            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.ADDED_REQUEST);
-                            editorScreen.commit();
+                            mEditorScreen = mSharedPreferencesScreen.edit();
+                            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.ADDED_REQUEST);
+                            mEditorScreen.commit();
                             intent = new Intent(this, MainActivity.class);
                             message = "Yêu cầu của bạn đã bị từ chối";
                         }
@@ -100,10 +94,10 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                             intent.putExtra("journey_id", journeyId);
                             intent.putExtra(VehicleMoveActivity.CALL_FROM_WHAT_ACTIVITY, VehicleMoveActivity.START_TRIP);
 
-                            editorScreen = sharedPreferencesScreen.edit();
-                            editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
-                            editorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, journeyId);
-                            editorScreen.commit();
+                            mEditorScreen = mSharedPreferencesScreen.edit();
+                            mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.STARTED_TRIP);
+                            mEditorScreen.putInt(VehicleMoveActivity.JOURNEY_ID, journeyId);
+                            mEditorScreen.commit();
                         }
                         title = "Bắt đầu chuyến đi";
                         message = "Người có xe đã đến nơi và đón người không có xe thành công";
@@ -133,15 +127,15 @@ public class CustomFirebaseMessagingService extends FirebaseMessagingService {
                             message = "Người đi chung đã hủy với không lí do";
                         }
                         intent =new Intent(this,MainActivity.class);
-                        editorScreen = sharedPreferencesScreen.edit();
-                        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
-                        editorScreen.commit();
+                        mEditorScreen = mSharedPreferencesScreen.edit();
+                        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+                        mEditorScreen.commit();
                         break;
                     default:
                         intent=new Intent(this,MainActivity.class);
-                        editorScreen = sharedPreferencesScreen.edit();
-                        editorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
-                        editorScreen.commit();
+                        mEditorScreen = mSharedPreferencesScreen.edit();
+                        mEditorScreen.putInt(MainActivity.SCREEN_NAME, MainActivity.MAIN_ACTIVITY);
+                        mEditorScreen.commit();
                         break;
                 }
 

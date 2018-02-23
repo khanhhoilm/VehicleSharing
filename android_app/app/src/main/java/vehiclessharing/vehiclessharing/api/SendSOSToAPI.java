@@ -10,28 +10,28 @@ import vehiclessharing.vehiclessharing.model.StatusResponse;
  */
 
 public class SendSOSToAPI {
-    private RestManager restManager;
-    private SendSOSCallback sendSOSCallback;
+    private RestManager mRestManager;
+    private SendSOSCallback mSendSOSInterfaceCallback;
 
     public SendSOSToAPI(SendSOSCallback sendSOSCallback) {
-        this.sendSOSCallback = sendSOSCallback;
-        restManager=new RestManager();
+        this.mSendSOSInterfaceCallback = sendSOSCallback;
+        mRestManager=new RestManager();
     }
 
     public void sendSOS(final String apiToken, final String address, final int vehicleType){
         final String comment="Nguy hiểm";
-        restManager.getApiService().sendSOS(apiToken,vehicleType,address,comment).enqueue(new Callback<StatusResponse>() {
+        mRestManager.getApiService().sendSOS(apiToken,vehicleType,address,comment).enqueue(new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 if(response.isSuccessful()&&response.body().getStatus().getError()==0) {
-                    sendSOSCallback.sendSOSSuccess();
+                    mSendSOSInterfaceCallback.sendSOSSuccess();
                 }else {
-                   sendSOSCallback.sendSOSFailed();                }
+                    mSendSOSInterfaceCallback.sendSOSFailed();                }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                sendSOSCallback.sendSOSFailed();
+                mSendSOSInterfaceCallback.sendSOSFailed();
             }
         });
     }
